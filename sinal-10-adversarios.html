@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Adversários</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* sidebar (padrão) */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ===== MAIN ===== */
+.main { padding: 28px 36px 48px; max-width: 1500px; width: 100%; }
+
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
+.breadcrumb .current { color: var(--signal); }
+.breadcrumb-sep { color: var(--fog-softer); }
+
+.main-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.header-title { font-family: var(--font-display); font-size: 42px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.header-title em { font-style: italic; color: var(--signal); }
+.header-sub { font-size: 13px; color: var(--fog); margin-top: 10px; max-width: 560px; line-height: 1.5; }
+
+.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); transition: all 0.15s ease; }
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
+.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.header-actions { display: flex; gap: 10px; }
+
+/* ===== TOP INSIGHT BANNER ===== */
+.insight-banner {
+  background: var(--signal);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 22px 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-banner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 350px;
+  height: 350px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(10,10,11,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.insight-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--signal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.insight-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.insight-content { flex: 1; position: relative; z-index: 1; }
+.insight-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.65;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.insight-title { font-family: var(--font-display); font-size: 26px; line-height: 1.15; letter-spacing: -0.02em; color: var(--ink); }
+.insight-title em { font-style: italic; }
+
+.insight-cta {
+  background: var(--ink);
+  color: var(--signal);
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+.insight-cta:hover { background: #1a1a1d; }
+
+/* ===== SHARE OF VOICE CHART ===== */
+.sov-section { margin-bottom: 28px; }
+
+.section-heading { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 14px; }
+.section-heading h2 { font-family: var(--font-display); font-size: 28px; color: var(--mist); letter-spacing: -0.02em; font-weight: 400; }
+.section-heading h2 em { font-style: italic; color: var(--signal); }
+.section-heading-meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.sov-chart {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+}
+
+.sov-bar {
+  display: flex;
+  height: 44px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.sov-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  position: relative;
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+.sov-seg:hover { opacity: 0.85; }
+.sov-seg.marina { background: var(--signal); color: var(--ink); }
+.sov-seg.carlos { background: var(--info); color: var(--ink); }
+.sov-seg.roberta { background: var(--caution); color: var(--ink); }
+.sov-seg.outros { background: var(--fog); color: var(--ink); }
+
+.sov-legend {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.sov-legend-item {
+  padding-left: 14px;
+  border-left: 3px solid var(--fog-soft);
+}
+.sov-legend-item.marina { border-left-color: var(--signal); }
+.sov-legend-item.carlos { border-left-color: var(--info); }
+.sov-legend-item.roberta { border-left-color: var(--caution); }
+.sov-legend-item.outros { border-left-color: var(--fog); }
+
+.legend-name { font-size: 13px; color: var(--mist); font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.legend-name .you-tag { font-family: var(--font-mono); font-size: 9px; background: var(--signal); color: var(--ink); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em; font-weight: 700; }
+.legend-pct { font-family: var(--font-display); font-size: 24px; line-height: 1; color: var(--mist); letter-spacing: -0.02em; }
+.legend-delta { font-family: var(--font-mono); font-size: 10px; margin-top: 4px; letter-spacing: 0.05em; }
+.legend-delta.up { color: var(--positive); }
+.legend-delta.down { color: var(--negative); }
+.legend-delta.flat { color: var(--fog); }
+
+/* ===== ADVERSARIES GRID ===== */
+.adv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+
+.adv-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.adv-card:hover { border-color: var(--border-hover); }
+
+/* Header */
+.adv-head {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.adv-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--mist);
+  flex-shrink: 0;
+}
+.adv-avatar.c { background: rgba(127, 168, 232, 0.15); color: var(--info); border-color: var(--info); }
+.adv-avatar.r { background: rgba(244, 197, 68, 0.15); color: var(--caution); border-color: var(--caution); }
+
+.adv-meta { flex: 1; min-width: 0; }
+.adv-name { font-size: 16px; color: var(--mist); font-weight: 600; line-height: 1.2; margin-bottom: 3px; }
+.adv-info { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.adv-badge { 
+  font-family: var(--font-mono); 
+  font-size: 9px; 
+  padding: 4px 8px; 
+  border-radius: 5px; 
+  letter-spacing: 0.08em; 
+  text-transform: uppercase; 
+  font-weight: 700; 
+  flex-shrink: 0;
+}
+.adv-badge.vulneravel { background: rgba(109, 214, 125, 0.15); color: var(--positive); }
+.adv-badge.ofensivo { background: rgba(240, 93, 94, 0.15); color: var(--negative); }
+
+/* Stats */
+.adv-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 16px 22px;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.adv-stat { }
+.stat-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fog); margin-bottom: 4px; }
+.stat-value { font-family: var(--font-display); font-size: 22px; line-height: 1; color: var(--mist); letter-spacing: -0.02em; }
+.stat-delta { font-family: var(--font-mono); font-size: 10px; margin-top: 4px; letter-spacing: 0.03em; }
+.stat-delta.up { color: var(--positive); }
+.stat-delta.down { color: var(--negative); }
+.stat-delta.flat { color: var(--fog); }
+
+/* Movement feed */
+.adv-movements {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.moves-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 12px; }
+
+.move-item {
+  padding: 8px 0;
+  border-top: 1px dashed rgba(237,237,233,0.04);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.move-item:first-child { border-top: none; padding-top: 0; }
+
+.move-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 7px;
+  background: var(--fog-soft);
+  flex-shrink: 0;
+}
+.move-dot.new { background: var(--signal); box-shadow: 0 0 6px var(--signal); }
+.move-dot.caution { background: var(--caution); }
+.move-dot.alert { background: var(--negative); }
+
+.move-content { flex: 1; min-width: 0; }
+.move-title { font-size: 12.5px; color: var(--mist); line-height: 1.4; }
+.move-title strong { color: var(--signal); font-weight: 500; }
+.move-time { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 2px; letter-spacing: 0.03em; }
+
+/* Themes chart (mini) */
+.adv-themes {
+  padding: 18px 22px;
+}
+.themes-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 12px; display: flex; justify-content: space-between; }
+.themes-label em { font-style: italic; color: var(--signal); font-family: var(--font-display); font-size: 13px; letter-spacing: 0; text-transform: none; }
+
+.theme-row { margin-bottom: 10px; }
+.theme-row:last-child { margin-bottom: 0; }
+.theme-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.theme-name { font-size: 12px; color: var(--mist); }
+.theme-name.absent { color: var(--fog); font-style: italic; }
+.theme-count { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.03em; }
+.theme-bar-mini { height: 4px; background: var(--ink); border-radius: 2px; overflow: hidden; }
+.theme-fill-mini { height: 100%; border-radius: 2px; background: var(--fog-soft); }
+.theme-fill-mini.high { background: var(--caution); }
+.theme-fill-mini.alert { background: var(--negative); }
+.theme-fill-mini.absent { background: var(--fog-softer); opacity: 0.5; }
+
+/* Card footer */
+.adv-footer {
+  padding: 12px 22px;
+  background: var(--ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.adv-footer-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; }
+.adv-footer-btn { font-family: var(--font-body); font-size: 11px; padding: 5px 10px; border-radius: 5px; background: transparent; border: 1px solid var(--border); color: var(--mist); cursor: pointer; font-weight: 500; }
+.adv-footer-btn:hover { border-color: var(--signal); color: var(--signal); }
+
+/* ===== THEMATIC MATRIX ===== */
+.matrix-section { margin-bottom: 28px; }
+
+.matrix-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  overflow-x: auto;
+}
+
+.matrix-desc { font-size: 13px; color: var(--fog); margin-bottom: 20px; line-height: 1.5; max-width: 640px; }
+
+.matrix-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 700px; }
+
+.matrix-table thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fog);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.matrix-table thead th.you { color: var(--signal); }
+
+.matrix-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--mist);
+  vertical-align: middle;
+}
+.matrix-table tbody tr:last-child td { border-bottom: none; }
+
+.matrix-table .theme-col { font-family: var(--font-display); font-size: 16px; color: var(--mist); width: 30%; }
+
+.heat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
+}
+.heat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.heat.high .heat-dot { background: var(--signal); box-shadow: 0 0 6px var(--signal-glow); }
+.heat.medium .heat-dot { background: var(--caution); }
+.heat.low .heat-dot { background: var(--fog-softer); border: 1px solid var(--fog-soft); }
+.heat.absent { color: var(--fog); font-style: italic; }
+.heat.absent .heat-dot { background: transparent; border: 1px dashed var(--fog-soft); }
+
+.opportunity-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  background: var(--signal-glow);
+  color: var(--signal);
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+@media (max-width: 1200px) {
+  .adv-grid { grid-template-columns: 1fr; }
+  .sov-legend { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .insight-banner { flex-direction: column; align-items: flex-start; }
+  .sov-legend { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div>
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span>Sinal</span><span class="breadcrumb-sep">/</span>
+      <span>Inteligência</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Análise de Adversários</span>
+    </div>
+
+    <div class="main-header">
+      <div>
+        <h1 class="header-title">O outro lado, <em>em tempo real.</em></h1>
+        <p class="header-sub">
+          Movimentação, temas, vulnerabilidades e oportunidades dos seus principais
+          concorrentes pelo mesmo cargo — cruzado com sua própria operação.
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Últimos 7 dias</button>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar adversário</button>
+      </div>
+    </div>
+
+    <!-- INSIGHT BANNER -->
+    <div class="insight-banner">
+      <div class="insight-icon">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="insight-content">
+        <div class="insight-label">Sinal identificou</div>
+        <div class="insight-title">Silêncio de <em>Carlos Mendes</em> sobre saúde há 8 dias cria janela para você dominar o tema.</div>
+      </div>
+      <button class="insight-cta">Ver plano de ação →</button>
+    </div>
+
+    <!-- SHARE OF VOICE -->
+    <div class="sov-section">
+      <div class="section-heading">
+        <h2>Share of voice <em>no distrito</em></h2>
+        <span class="section-heading-meta">Últimos 7 dias · 8.247 menções totais</span>
+      </div>
+
+      <div class="sov-chart">
+        <div class="sov-bar">
+          <div class="sov-seg marina" style="flex: 34;">34%</div>
+          <div class="sov-seg carlos" style="flex: 29;">29%</div>
+          <div class="sov-seg roberta" style="flex: 24;">24%</div>
+          <div class="sov-seg outros" style="flex: 13;">13%</div>
+        </div>
+
+        <div class="sov-legend">
+
+          <div class="sov-legend-item marina">
+            <div class="legend-name">Marina Aguiar <span class="you-tag">Você</span></div>
+            <div class="legend-pct">34%</div>
+            <div class="legend-delta up">↑ 6pp vs semana anterior</div>
+          </div>
+
+          <div class="sov-legend-item carlos">
+            <div class="legend-name">Carlos Mendes</div>
+            <div class="legend-pct">29%</div>
+            <div class="legend-delta down">↓ 4pp · engajamento caindo</div>
+          </div>
+
+          <div class="sov-legend-item roberta">
+            <div class="legend-name">Roberta Caldas</div>
+            <div class="legend-pct">24%</div>
+            <div class="legend-delta up">↑ 3pp · campanha juventude</div>
+          </div>
+
+          <div class="sov-legend-item outros">
+            <div class="legend-name">Outros 4 concorrentes</div>
+            <div class="legend-pct">13%</div>
+            <div class="legend-delta flat">→ estáveis</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ADVERSARIES GRID -->
+    <div class="section-heading">
+      <h2>Concorrentes <em>monitorados</em></h2>
+      <span class="section-heading-meta">2 principais · atualizados em tempo real</span>
+    </div>
+
+    <div class="adv-grid">
+
+      <!-- CARLOS MENDES -->
+      <div class="adv-card">
+        <div class="adv-head">
+          <div class="adv-avatar c">CM</div>
+          <div class="adv-meta">
+            <div class="adv-name">Dep. Carlos Mendes</div>
+            <div class="adv-info">PSD · MG · 3º mandato</div>
+          </div>
+          <span class="adv-badge vulneravel">Vulnerável</span>
+        </div>
+
+        <div class="adv-stats">
+          <div class="adv-stat">
+            <div class="stat-label">Alcance · 7d</div>
+            <div class="stat-value">89K</div>
+            <div class="stat-delta down">↓ 12%</div>
+          </div>
+          <div class="adv-stat">
+            <div class="stat-label">Posts · semana</div>
+            <div class="stat-value">14</div>
+            <div class="stat-delta down">↓ 22%</div>
+          </div>
+          <div class="adv-stat">
+            <div class="stat-label">Sentimento</div>
+            <div class="stat-value">58%</div>
+            <div class="stat-delta flat">→ positivo</div>
+          </div>
+        </div>
+
+        <div class="adv-movements">
+          <div class="moves-label">Movimentação recente</div>
+
+          <div class="move-item">
+            <div class="move-dot alert"></div>
+            <div class="move-content">
+              <div class="move-title"><strong>Silêncio há 8 dias</strong> sobre saúde pública · tema dominante da semana</div>
+              <div class="move-time">Janela aberta · 21 Abr</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot"></div>
+            <div class="move-content">
+              <div class="move-title">3 posts em Instagram sobre segurança pública em Nova Lima</div>
+              <div class="move-time">18 Abr · engajamento médio</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot caution"></div>
+            <div class="move-content">
+              <div class="move-title">Entrevista mal recebida na Itatiaia · comentários negativos +40%</div>
+              <div class="move-time">16 Abr · oportunidade defensiva</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot"></div>
+            <div class="move-content">
+              <div class="move-title">Apresentou emenda para BR-040 · R$ 3.2M · recebeu pouca atenção</div>
+              <div class="move-time">14 Abr · subaproveitada</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="adv-themes">
+          <div class="themes-label">
+            <span>Temas dominantes</span>
+            <em>7 dias</em>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name">Segurança pública</span>
+              <span class="theme-count">6 posts</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini high" style="width: 78%;"></div></div>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name">Infraestrutura / rodovias</span>
+              <span class="theme-count">4 posts</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini" style="width: 52%;"></div></div>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name absent">Saúde pública</span>
+              <span class="theme-count">0 posts · 8 dias</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini absent" style="width: 2%;"></div></div>
+          </div>
+        </div>
+
+        <div class="adv-footer">
+          <span class="adv-footer-meta">Monitorado desde Jan/2025 · 1.247 posts indexados</span>
+          <button class="adv-footer-btn">Ver perfil completo →</button>
+        </div>
+      </div>
+
+      <!-- ROBERTA CALDAS -->
+      <div class="adv-card">
+        <div class="adv-head">
+          <div class="adv-avatar r">RC</div>
+          <div class="adv-meta">
+            <div class="adv-name">Dep. Roberta Caldas</div>
+            <div class="adv-info">PT · MG · 1º mandato</div>
+          </div>
+          <span class="adv-badge ofensivo">Ofensivo</span>
+        </div>
+
+        <div class="adv-stats">
+          <div class="adv-stat">
+            <div class="stat-label">Alcance · 7d</div>
+            <div class="stat-value">142K</div>
+            <div class="stat-delta up">↑ 28%</div>
+          </div>
+          <div class="adv-stat">
+            <div class="stat-label">Posts · semana</div>
+            <div class="stat-value">22</div>
+            <div class="stat-delta up">↑ 38%</div>
+          </div>
+          <div class="adv-stat">
+            <div class="stat-label">Sentimento</div>
+            <div class="stat-value">64%</div>
+            <div class="stat-delta up">↑ positivo</div>
+          </div>
+        </div>
+
+        <div class="adv-movements">
+          <div class="moves-label">Movimentação recente</div>
+
+          <div class="move-item">
+            <div class="move-dot new"></div>
+            <div class="move-content">
+              <div class="move-title"><strong>Campanha digital "Juventude MG"</strong> · 6 peças em 24h · alto engajamento</div>
+              <div class="move-time">Ontem · 20 Abr</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot"></div>
+            <div class="move-content">
+              <div class="move-title">Reel viralizou no TikTok · 340K views · tema saúde mental jovem</div>
+              <div class="move-time">19 Abr · pico de alcance</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot caution"></div>
+            <div class="move-content">
+              <div class="move-title">Ataque indireto · "enquanto alguns visitam hospitais, nós atuamos na raiz" · pode ser resposta</div>
+              <div class="move-time">17 Abr · monitorar escalação</div>
+            </div>
+          </div>
+
+          <div class="move-item">
+            <div class="move-dot"></div>
+            <div class="move-content">
+              <div class="move-title">Aliança anunciada com coletivo estudantil da UFMG · 4 influenciadores regionais</div>
+              <div class="move-time">15 Abr · base se fortalecendo</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="adv-themes">
+          <div class="themes-label">
+            <span>Temas dominantes</span>
+            <em>7 dias</em>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name">Juventude</span>
+              <span class="theme-count">9 posts</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini high" style="width: 92%;"></div></div>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name">Saúde mental</span>
+              <span class="theme-count">5 posts</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini" style="width: 58%;"></div></div>
+          </div>
+
+          <div class="theme-row">
+            <div class="theme-top">
+              <span class="theme-name">Educação / universidades</span>
+              <span class="theme-count">4 posts</span>
+            </div>
+            <div class="theme-bar-mini"><div class="theme-fill-mini" style="width: 42%;"></div></div>
+          </div>
+        </div>
+
+        <div class="adv-footer">
+          <span class="adv-footer-meta">Monitorada desde Fev/2025 · 842 posts indexados</span>
+          <button class="adv-footer-btn">Ver perfil completo →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- THEMATIC MATRIX -->
+    <div class="matrix-section">
+      <div class="section-heading">
+        <h2>Matriz <em>temática</em></h2>
+        <span class="section-heading-meta">Quem fala o quê · últimos 30 dias</span>
+      </div>
+
+      <div class="matrix-card">
+        <p class="matrix-desc">
+          Cruzamento das principais pautas regionais com a cobertura que cada candidato tem dado.
+          Pautas em que você é forte E o adversário é fraco = oportunidade de dominância.
+        </p>
+
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Pauta</th>
+              <th class="you">Marina · você</th>
+              <th>Carlos Mendes</th>
+              <th>Roberta Caldas</th>
+              <th>Diagnóstico</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <tr>
+              <td class="theme-col">Saúde pública</td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 14 posts</span></td>
+              <td><span class="heat absent"><span class="heat-dot"></span>Ausente · 8 dias</span></td>
+              <td><span class="heat medium"><span class="heat-dot"></span>Médio · 5 posts</span></td>
+              <td><span class="opportunity-pill">Dominar</span></td>
+            </tr>
+
+            <tr>
+              <td class="theme-col">Transporte intermunicipal</td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 9 posts</span></td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 1 post</span></td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 2 posts</span></td>
+              <td><span class="opportunity-pill">Dominar</span></td>
+            </tr>
+
+            <tr>
+              <td class="theme-col">Segurança pública</td>
+              <td><span class="heat medium"><span class="heat-dot"></span>Médio · 4 posts</span></td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 6 posts</span></td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 2 posts</span></td>
+              <td style="color: var(--fog); font-size: 12px;">Reforçar</td>
+            </tr>
+
+            <tr>
+              <td class="theme-col">Juventude</td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 2 posts</span></td>
+              <td><span class="heat absent"><span class="heat-dot"></span>Ausente</span></td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 9 posts</span></td>
+              <td style="color: var(--caution); font-size: 12px;">Atenção · perdendo terreno</td>
+            </tr>
+
+            <tr>
+              <td class="theme-col">Infraestrutura / rodovias</td>
+              <td><span class="heat medium"><span class="heat-dot"></span>Médio · 5 posts</span></td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 7 posts</span></td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 1 post</span></td>
+              <td style="color: var(--fog); font-size: 12px;">Equilibrar</td>
+            </tr>
+
+            <tr>
+              <td class="theme-col">Educação</td>
+              <td><span class="heat medium"><span class="heat-dot"></span>Médio · 4 posts</span></td>
+              <td><span class="heat low"><span class="heat-dot"></span>Baixo · 2 posts</span></td>
+              <td><span class="heat high"><span class="heat-dot"></span>Alto · 6 posts</span></td>
+              <td style="color: var(--fog); font-size: 12px;">Disputada</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

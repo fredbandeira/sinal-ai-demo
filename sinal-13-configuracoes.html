@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Configurações</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* sidebar padrão */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ===== MAIN ===== */
+.main { padding: 28px 36px 48px; max-width: 1400px; width: 100%; }
+
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
+.breadcrumb .current { color: var(--signal); }
+.breadcrumb-sep { color: var(--fog-softer); }
+
+.main-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.header-title { font-family: var(--font-display); font-size: 42px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.header-title em { font-style: italic; color: var(--signal); }
+.header-sub { font-size: 13px; color: var(--fog); margin-top: 10px; max-width: 580px; line-height: 1.5; }
+
+/* ===== TABS NAV ===== */
+.tabs-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 5px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.tabs-nav::-webkit-scrollbar { display: none; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--fog);
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+}
+.tab:hover { color: var(--mist); }
+.tab.active { background: var(--ink); color: var(--mist); box-shadow: 0 1px 0 rgba(237, 237, 233, 0.04); }
+.tab.active::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 8px var(--signal); margin-right: 2px; }
+.tab svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+/* ===== LAYOUT: conteúdo em 2 colunas ===== */
+.content-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+/* ===== SECTION ===== */
+.section {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 16px;
+}
+
+.section-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.section-title { font-family: var(--font-display); font-size: 26px; line-height: 1.1; letter-spacing: -0.02em; color: var(--mist); margin-bottom: 6px; }
+.section-title em { font-style: italic; color: var(--signal); }
+.section-desc { font-size: 13px; color: var(--fog); line-height: 1.5; max-width: 520px; }
+
+/* ===== TEAM TABLE ===== */
+.team-table { display: flex; flex-direction: column; }
+
+.team-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 180px 140px 32px;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  align-items: center;
+}
+.team-row:first-child { border-top: none; padding-top: 0; }
+
+.team-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--ink);
+  color: var(--mist);
+  flex-shrink: 0;
+}
+.team-avatar.candidate { background: linear-gradient(135deg, var(--signal), var(--signal-dim)); color: var(--ink); border-color: var(--signal); }
+.team-avatar.coord { background: rgba(127, 168, 232, 0.1); color: var(--info); border-color: var(--info); }
+.team-avatar.assess { background: rgba(109, 214, 125, 0.1); color: var(--positive); border-color: var(--positive); }
+.team-avatar.advogado { background: rgba(244, 197, 68, 0.1); color: var(--caution); border-color: var(--caution); }
+
+.team-info {}
+.team-name { font-size: 14px; color: var(--mist); font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; }
+.team-name .you-tag { font-family: var(--font-mono); font-size: 9px; background: var(--signal); color: var(--ink); padding: 2px 6px; border-radius: 4px; letter-spacing: 0.05em; font-weight: 700; }
+.team-email { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.03em; }
+
+.team-role { font-size: 13px; color: var(--mist-dim); }
+.team-role small { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.03em; margin-top: 3px; text-transform: uppercase; }
+
+.team-last { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.03em; }
+.team-last.online { color: var(--positive); display: flex; align-items: center; gap: 6px; }
+.team-last.online::before { content: ''; width: 6px; height: 6px; background: var(--positive); border-radius: 50%; box-shadow: 0 0 6px var(--positive); }
+
+.team-menu {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--fog);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-menu:hover { border-color: var(--border); color: var(--mist); }
+.team-menu svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.invite-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px dashed var(--border-hover);
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin: 0 -8px;
+  padding: 14px 8px;
+}
+.invite-row:hover { background: var(--ink-hover); border-radius: 8px; }
+
+.invite-plus {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1px dashed var(--fog-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fog);
+}
+.invite-plus svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+.invite-text { font-family: var(--font-mono); font-size: 12px; color: var(--fog); letter-spacing: 0.05em; }
+.invite-text strong { color: var(--mist); font-weight: 500; }
+.invite-arrow { color: var(--fog); }
+.invite-arrow svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ===== APPROVAL FLOW ===== */
+.approval-card {
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.approval-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.approval-title { font-family: var(--font-display); font-size: 18px; color: var(--mist); letter-spacing: -0.02em; }
+.approval-title em { font-style: italic; color: var(--signal); }
+.approval-edit { font-family: var(--font-mono); font-size: 11px; color: var(--signal); cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; }
+
+.flow-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+.flow-steps::-webkit-scrollbar { display: none; }
+
+.flow-step {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  position: relative;
+}
+.flow-step::after {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.flow-step:last-child::after { display: none; }
+
+.flow-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ink-softer);
+  color: var(--mist);
+  border: 1px solid var(--border);
+}
+.flow-step.signal .flow-dot { background: var(--signal); color: var(--ink); border-color: var(--signal); }
+.flow-step.human .flow-dot { background: var(--info); color: var(--mist); border-color: var(--info); }
+.flow-step.candidate .flow-dot { background: var(--signal); color: var(--ink); border-color: var(--signal); box-shadow: 0 0 10px var(--signal-glow); }
+
+.flow-name { font-size: 12px; color: var(--mist); font-weight: 500; margin-bottom: 2px; }
+.flow-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* ===== RIGHT RAIL ===== */
+.rail { display: flex; flex-direction: column; gap: 14px; }
+
+.rail-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.rail-card-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+
+/* Setup progress */
+.setup-score-card {
+  background: var(--ink);
+  border: 1px solid var(--signal);
+  border-radius: 14px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.setup-score-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -30%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--signal-glow) 0%, transparent 70%);
+}
+
+.setup-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); margin-bottom: 8px; position: relative; z-index: 1; font-weight: 600; }
+.setup-big { font-family: var(--font-display); font-size: 52px; line-height: 1; color: var(--mist); letter-spacing: -0.03em; margin-bottom: 10px; position: relative; z-index: 1; }
+.setup-big em { font-style: italic; color: var(--signal); font-size: 28px; }
+.setup-desc { font-size: 12px; color: var(--mist-dim); line-height: 1.5; position: relative; z-index: 1; }
+
+.setup-bar { height: 5px; background: var(--ink-softer); border-radius: 3px; overflow: hidden; margin-top: 14px; position: relative; z-index: 1; }
+.setup-fill { height: 100%; background: var(--signal); border-radius: 3px; width: 87%; }
+
+.setup-items { margin-top: 14px; position: relative; z-index: 1; display: flex; flex-direction: column; gap: 8px; }
+.setup-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mist-dim); }
+.setup-item svg { width: 12px; height: 12px; stroke: var(--positive); fill: none; stroke-width: 2.5; flex-shrink: 0; }
+.setup-item.pending { color: var(--fog); }
+.setup-item.pending svg { stroke: var(--fog-soft); }
+
+/* Permission matrix */
+.perm-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.perm-row { padding: 10px 0; border-top: 1px solid var(--border); font-size: 12.5px; display: flex; justify-content: space-between; align-items: center; }
+.perm-row:first-of-type { border-top: none; padding-top: 0; }
+.perm-name { color: var(--mist); font-weight: 500; }
+.perm-roles { display: flex; gap: 4px; }
+.perm-role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.perm-role-dot.cand { background: var(--signal); }
+.perm-role-dot.coord { background: var(--info); }
+.perm-role-dot.assess { background: var(--positive); }
+.perm-role-dot.adv { background: var(--caution); }
+.perm-role-dot.off { background: transparent; border: 1px solid var(--fog-softer); }
+
+.perm-legend { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+.perm-legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.03em; }
+.perm-legend-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+.perm-legend-item .dot.cand { background: var(--signal); }
+.perm-legend-item .dot.coord { background: var(--info); }
+.perm-legend-item .dot.assess { background: var(--positive); }
+.perm-legend-item .dot.adv { background: var(--caution); }
+
+/* Danger zone */
+.danger-card {
+  background: var(--ink);
+  border: 1px solid rgba(240, 93, 94, 0.3);
+  border-left: 3px solid var(--negative);
+  border-radius: 12px;
+  padding: 18px;
+}
+.danger-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--negative); margin-bottom: 10px; font-weight: 600; }
+.danger-desc { font-size: 12px; color: var(--mist-dim); line-height: 1.5; margin-bottom: 12px; }
+.danger-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--negative);
+  color: var(--negative);
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.danger-btn:hover { background: rgba(240, 93, 94, 0.08); }
+
+/* Header actions */
+.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); transition: all 0.15s ease; font-family: var(--font-body); }
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
+.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+@media (max-width: 1100px) {
+  .content-layout { grid-template-columns: 1fr; }
+  .team-row { grid-template-columns: 44px 1fr auto; }
+  .team-role, .team-last { display: none; }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .section { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Governança</div>
+      <a href="sinal-11-compliance.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
+      <a href="sinal-13-configuracoes.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configurações</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div>
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span>Sinal</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Configurações</span>
+    </div>
+
+    <div class="main-header">
+      <div>
+        <h1 class="header-title">A operação <em>como você quer.</em></h1>
+        <p class="header-sub">
+          Quem pode fazer o quê, quais fontes alimentam a IA, como sua voz evolui
+          e toda a engrenagem do produto — ajustável a qualquer momento.
+        </p>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-nav">
+      <button class="tab">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Perfil do candidato
+      </button>
+      <button class="tab">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Treinamento da voz
+      </button>
+      <button class="tab">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Integrações
+      </button>
+      <button class="tab active">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Equipe e permissões
+      </button>
+      <button class="tab">
+        <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+        Plano e cobrança
+      </button>
+      <button class="tab">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Privacidade e dados
+      </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-layout">
+
+      <!-- LEFT: team section -->
+      <div>
+
+        <div class="section">
+
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Quem toca <em>com você.</em></h2>
+              <p class="section-desc">
+                Sua equipe no Sinal. Cada pessoa tem papel definido, permissões específicas
+                e rastreabilidade total no compliance.
+              </p>
+            </div>
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Convidar pessoa
+            </button>
+          </div>
+
+          <div class="team-table">
+
+            <!-- Marina -->
+            <div class="team-row">
+              <div class="team-avatar candidate">MA</div>
+              <div class="team-info">
+                <div class="team-name">
+                  Marina Aguiar
+                  <span class="you-tag">Você</span>
+                </div>
+                <div class="team-email">marina.aguiar@marinaaguiar.com.br</div>
+              </div>
+              <div class="team-role">
+                Candidata · admin
+                <small>Aprovação final</small>
+              </div>
+              <div class="team-last online">Agora</div>
+              <button class="team-menu">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- Coordenadora -->
+            <div class="team-row">
+              <div class="team-avatar coord">AC</div>
+              <div class="team-info">
+                <div class="team-name">Ana Caldeira</div>
+                <div class="team-email">ana@marinaaguiar.com.br</div>
+              </div>
+              <div class="team-role">
+                Coordenadora · editora
+                <small>Aprovação nível 2</small>
+              </div>
+              <div class="team-last online">Agora</div>
+              <button class="team-menu">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- Assessor -->
+            <div class="team-row">
+              <div class="team-avatar assess">BT</div>
+              <div class="team-info">
+                <div class="team-name">Bruno Teixeira</div>
+                <div class="team-email">bruno@marinaaguiar.com.br</div>
+              </div>
+              <div class="team-role">
+                Assessor · operação
+                <small>Aprovação nível 1</small>
+              </div>
+              <div class="team-last">Há 12 min</div>
+              <button class="team-menu">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- Social Media -->
+            <div class="team-row">
+              <div class="team-avatar assess">JR</div>
+              <div class="team-info">
+                <div class="team-name">Júlia Reis</div>
+                <div class="team-email">julia@marinaaguiar.com.br</div>
+              </div>
+              <div class="team-role">
+                Social media · operação
+                <small>Só edição de posts</small>
+              </div>
+              <div class="team-last">Há 1h</div>
+              <button class="team-menu">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- Advogado -->
+            <div class="team-row">
+              <div class="team-avatar advogado">HP</div>
+              <div class="team-info">
+                <div class="team-name">Henrique Pinheiro</div>
+                <div class="team-email">henrique.pinheiro@advocacia.com</div>
+              </div>
+              <div class="team-role">
+                Advogado eleitoral · auditor
+                <small>Só leitura · compliance</small>
+              </div>
+              <div class="team-last">Ontem · 18h</div>
+              <button class="team-menu">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- Invite row -->
+            <div class="invite-row">
+              <div class="invite-plus">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div class="invite-text">Convidar mais pessoas · <strong>até 10 assentos</strong> no plano atual</div>
+              <div class="invite-arrow">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- APPROVAL FLOW -->
+          <div class="approval-card">
+            <div class="approval-head">
+              <div class="approval-title">Fluxo de <em>aprovação</em> · conteúdo publicado no nome da Marina</div>
+              <span class="approval-edit">Editar fluxo</span>
+            </div>
+
+            <div class="flow-steps">
+              <div class="flow-step signal">
+                <div class="flow-dot">IA</div>
+                <div class="flow-name">Sinal</div>
+                <div class="flow-role">Gera</div>
+              </div>
+              <div class="flow-step human">
+                <div class="flow-dot">BT</div>
+                <div class="flow-name">Bruno</div>
+                <div class="flow-role">Revisa · nível 1</div>
+              </div>
+              <div class="flow-step human">
+                <div class="flow-dot">AC</div>
+                <div class="flow-name">Ana</div>
+                <div class="flow-role">Valida · nível 2</div>
+              </div>
+              <div class="flow-step candidate">
+                <div class="flow-dot">MA</div>
+                <div class="flow-name">Marina</div>
+                <div class="flow-role">Aprova · final</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT RAIL -->
+      <aside class="rail">
+
+        <!-- Setup progress -->
+        <div class="setup-score-card">
+          <div class="setup-label">Setup do Sinal</div>
+          <div class="setup-big">87<em>%</em></div>
+          <div class="setup-bar"><div class="setup-fill"></div></div>
+          <p class="setup-desc" style="margin-top: 14px;">
+            Produto quase totalmente configurado. Faltam detalhes no treinamento de voz
+            e uma integração opcional.
+          </p>
+
+          <div class="setup-items">
+            <div class="setup-item">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Perfil do candidato
+            </div>
+            <div class="setup-item">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Voz calibrada · 64%
+            </div>
+            <div class="setup-item">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              5 integrações ativas
+            </div>
+            <div class="setup-item">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Equipe · 5 pessoas
+            </div>
+            <div class="setup-item pending">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>
+              Voz acima de 80% · opcional
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions matrix -->
+        <div class="rail-card">
+          <div class="rail-card-title">
+            <span>Quem pode fazer o quê</span>
+            <span style="color: var(--signal); cursor: pointer; font-family: var(--font-display); font-size: 13px; text-transform: none; letter-spacing: 0; font-style: italic;">editar</span>
+          </div>
+
+          <div class="perm-matrix">
+            <div class="perm-row">
+              <span class="perm-name">Gerar posts</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot assess"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Aprovar conteúdo</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot off"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Responder WhatsApp</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot assess"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Editar banco respostas</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot off"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Ver compliance</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot assess"></span>
+                <span class="perm-role-dot adv"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Convidar pessoas</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot coord"></span>
+                <span class="perm-role-dot off"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+            <div class="perm-row">
+              <span class="perm-name">Gerenciar plano</span>
+              <div class="perm-roles">
+                <span class="perm-role-dot cand"></span>
+                <span class="perm-role-dot off"></span>
+                <span class="perm-role-dot off"></span>
+                <span class="perm-role-dot off"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="perm-legend">
+            <div class="perm-legend-item"><span class="dot cand"></span>Candidata</div>
+            <div class="perm-legend-item"><span class="dot coord"></span>Coordenação</div>
+            <div class="perm-legend-item"><span class="dot assess"></span>Operação</div>
+            <div class="perm-legend-item"><span class="dot adv"></span>Auditor</div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-card">
+          <div class="danger-title">Zona de cuidado</div>
+          <p class="danger-desc">
+            Ações irreversíveis. Exportar tudo antes de desligar
+            uma conta candidata.
+          </p>
+          <button class="danger-btn">Encerrar conta candidata</button>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

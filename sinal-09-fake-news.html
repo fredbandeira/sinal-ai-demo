@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Fake News</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --negative-glow: rgba(240, 93, 94, 0.12);
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--negative); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ===== MAIN ===== */
+.main { padding: 28px 36px 48px; max-width: 1400px; width: 100%; }
+
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
+.breadcrumb .current { color: var(--negative); }
+.breadcrumb-sep { color: var(--fog-softer); }
+
+.main-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.header-title { font-family: var(--font-display); font-size: 42px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.header-title em { font-style: italic; color: var(--negative); }
+.header-sub { font-size: 13px; color: var(--fog); margin-top: 10px; max-width: 560px; line-height: 1.5; display: flex; align-items: center; gap: 10px; }
+.header-sub .live-dot { width: 6px; height: 6px; background: var(--positive); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--positive); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); transition: all 0.15s ease; }
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
+.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn-danger { background: var(--negative); color: var(--mist); border-color: var(--negative); font-weight: 600; }
+.btn-danger:hover { background: #D94E4F; }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.header-actions { display: flex; gap: 10px; }
+
+/* ===== STATUS STRIP ===== */
+.status-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.status-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; position: relative; }
+.status-card.alert { border-color: var(--negative); border-left: 3px solid var(--negative); }
+.status-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 8px; }
+.status-label.alert { color: var(--negative); display: flex; align-items: center; gap: 6px; }
+.status-label.alert::before { content: ''; width: 5px; height: 5px; background: var(--negative); border-radius: 50%; animation: pulse 1.5s infinite; }
+.status-value { font-family: var(--font-display); font-size: 40px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.status-value.alert { color: var(--negative); }
+.status-note { font-size: 11px; color: var(--fog); margin-top: 6px; font-family: var(--font-mono); }
+.status-note.alert { color: var(--negative); }
+
+/* ===== ACTIVE CASE CARD — priority ===== */
+.active-case {
+  background: var(--ink-soft);
+  border: 1px solid var(--negative);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  position: relative;
+}
+
+.active-case::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: var(--negative);
+}
+
+.case-head {
+  padding: 24px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  background: linear-gradient(180deg, var(--negative-glow) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.case-head-left { flex: 1; }
+
+.case-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--negative);
+  color: var(--mist);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.case-status-tag .pulse { width: 6px; height: 6px; background: var(--mist); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+.case-headline {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--mist);
+  margin-bottom: 10px;
+}
+.case-headline em { font-style: italic; color: var(--negative); }
+
+.case-summary { font-size: 14px; color: var(--mist-dim); line-height: 1.55; max-width: 640px; }
+
+.case-head-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.case-id {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.case-detected {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--negative);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Evidence section */
+.case-body {
+  padding: 24px 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.evidence-block {}
+
+.evidence-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 12px;
+}
+
+/* Audio player */
+.audio-player {
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.audio-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.play-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--mist);
+  color: var(--ink);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.play-btn svg { width: 16px; height: 16px; fill: currentColor; margin-left: 2px; }
+
+.audio-info { flex: 1; }
+.audio-title { font-size: 13px; color: var(--mist); font-weight: 500; margin-bottom: 2px; }
+.audio-duration { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.audio-wave {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+.wave-bar { flex: 1; background: var(--fog-softer); border-radius: 1px; }
+.wave-bar.active { background: var(--negative); }
+.wave-bar.played { background: var(--mist-dim); }
+
+.audio-analysis {
+  background: rgba(240, 93, 94, 0.08);
+  border: 1px solid rgba(240, 93, 94, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.audio-analysis svg { width: 14px; height: 14px; stroke: var(--negative); fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 2px; }
+.audio-analysis-text { font-size: 12px; line-height: 1.5; color: var(--mist); }
+.audio-analysis-text strong { color: var(--negative); }
+
+/* Comparison */
+.comparison {
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.comp-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.comp-row:first-child { border-top: none; padding-top: 0; }
+
+.comp-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.comp-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.comp-badge.fake { background: var(--negative); color: var(--mist); }
+.comp-badge.real { background: var(--positive); color: var(--ink); }
+.comp-date { font-family: var(--font-mono); font-size: 10px; color: var(--fog); }
+
+.comp-quote {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mist);
+  padding: 8px 12px;
+  border-left: 2px solid var(--border);
+  font-style: italic;
+}
+.comp-quote.fake { border-left-color: var(--negative); color: var(--negative); }
+.comp-quote.real { border-left-color: var(--positive); color: var(--mist); }
+.comp-quote.real strong { color: var(--positive); font-style: normal; }
+
+.comp-source { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 6px; padding-left: 14px; letter-spacing: 0.03em; }
+.comp-source a { color: var(--signal); cursor: pointer; }
+
+/* Spread */
+.spread-section {
+  padding: 24px 28px;
+  border-top: 1px solid var(--border);
+}
+
+.spread-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.spread-title { font-family: var(--font-display); font-size: 22px; color: var(--mist); letter-spacing: -0.02em; }
+.spread-title em { font-style: italic; color: var(--negative); }
+.spread-meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+/* Timeline */
+.spread-timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 11px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  padding: 12px 0;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 20px;
+  align-items: center;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -28px;
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--negative);
+  border: 2px solid var(--ink-soft);
+  box-shadow: 0 0 0 2px var(--negative);
+}
+
+.timeline-item.first .timeline-dot { background: var(--caution); box-shadow: 0 0 0 2px var(--caution); }
+
+.timeline-content .place { font-size: 14px; color: var(--mist); font-weight: 500; }
+.timeline-content .detail { font-family: var(--font-mono); font-size: 11px; color: var(--fog); margin-top: 3px; letter-spacing: 0.03em; }
+
+.timeline-count { font-family: var(--font-mono); font-size: 11px; color: var(--negative); font-weight: 600; }
+.timeline-time { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; }
+
+/* Actions */
+.case-actions {
+  padding: 20px 28px;
+  background: var(--ink);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.actions-left { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px; }
+.actions-left svg { width: 12px; height: 12px; stroke: var(--signal); fill: none; stroke-width: 2; }
+
+.actions-right { display: flex; gap: 10px; }
+
+/* ===== HISTORY SECTION ===== */
+.section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-heading h2 { font-family: var(--font-display); font-size: 26px; color: var(--mist); letter-spacing: -0.02em; font-weight: 400; }
+.section-heading h2 em { font-style: italic; color: var(--signal); }
+.section-heading-meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+
+.history-item {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 60px 1fr auto auto;
+  gap: 16px;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  border-left: 3px solid var(--fog-soft);
+}
+.history-item:hover { border-color: var(--border-hover); }
+.history-item.resolved { border-left-color: var(--positive); }
+.history-item.action { border-left-color: var(--info); }
+.history-item.rejected { border-left-color: var(--fog-soft); opacity: 0.7; }
+
+.history-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.history-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.history-icon svg { width: 14px; height: 14px; stroke-width: 2; fill: none; }
+.history-icon.resolved { background: rgba(109, 214, 125, 0.15); }
+.history-icon.resolved svg { stroke: var(--positive); }
+.history-icon.action { background: rgba(127, 168, 232, 0.15); }
+.history-icon.action svg { stroke: var(--info); }
+.history-icon.rejected { background: var(--ink-softer); }
+.history-icon.rejected svg { stroke: var(--fog); }
+
+.history-content .title { font-size: 14px; color: var(--mist); font-weight: 500; line-height: 1.35; margin-bottom: 4px; }
+.history-content .meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; }
+
+.history-tags { display: flex; gap: 5px; }
+.history-tag { font-family: var(--font-mono); font-size: 9px; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; }
+.history-tag.resolved { background: rgba(109, 214, 125, 0.15); color: var(--positive); }
+.history-tag.action { background: rgba(127, 168, 232, 0.15); color: var(--info); }
+.history-tag.rejected { background: var(--ink-softer); color: var(--fog); }
+
+.history-date { font-family: var(--font-mono); font-size: 11px; color: var(--fog); text-align: right; letter-spacing: 0.05em; }
+
+@media (max-width: 1100px) {
+  .case-body { grid-template-columns: 1fr; }
+  .status-strip { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .case-head { flex-direction: column; }
+  .case-actions { flex-direction: column; align-items: stretch; }
+  .history-item { grid-template-columns: 1fr; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div>
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span>Sinal</span><span class="breadcrumb-sep">/</span>
+      <span>Inteligência</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Fake News</span>
+    </div>
+
+    <div class="main-header">
+      <div>
+        <h1 class="header-title">Defesa <em>ativa.</em></h1>
+        <p class="header-sub">
+          <span class="live-dot"></span>
+          Monitoramento 24/7 · áudio · vídeo · imagem · texto · deepfakes
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar relatório</button>
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/></svg>Ver histórico</button>
+      </div>
+    </div>
+
+    <!-- Status Strip -->
+    <div class="status-strip">
+      <div class="status-card alert">
+        <div class="status-label alert">Caso ativo · crítico</div>
+        <div class="status-value alert">1</div>
+        <div class="status-note alert">Áudio manipulado · Contagem</div>
+      </div>
+      <div class="status-card">
+        <div class="status-label">Resolvidos · 30 dias</div>
+        <div class="status-value">8</div>
+        <div class="status-note">Tempo médio de resposta: 42 min</div>
+      </div>
+      <div class="status-card">
+        <div class="status-label">Alcance neutralizado</div>
+        <div class="status-value">184K</div>
+        <div class="status-note">pessoas impactadas pela refutação</div>
+      </div>
+      <div class="status-card">
+        <div class="status-label">Taxa de identificação</div>
+        <div class="status-value">96%</div>
+        <div class="status-note">fake detectada antes de viralizar</div>
+      </div>
+    </div>
+
+    <!-- ACTIVE CASE -->
+    <div class="active-case">
+
+      <div class="case-head">
+        <div class="case-head-left">
+          <div class="case-status-tag">
+            <span class="pulse"></span>
+            ATIVO · CRÍTICO
+          </div>
+          <h2 class="case-headline">Áudio manipulado circulando em <em>Contagem</em></h2>
+          <p class="case-summary">
+            Áudio de 1min42s atribuindo falsamente à Marina a frase "votei contra o piso da enfermagem em 2022".
+            O áudio foi editado — a fala original é de outra sessão e tratava de tema totalmente diferente.
+          </p>
+        </div>
+        <div class="case-head-right">
+          <div class="case-id">#FN-2026-0421-001</div>
+          <div class="case-detected">Detectado há 1h 18min</div>
+        </div>
+      </div>
+
+      <div class="case-body">
+
+        <!-- AUDIO EVIDENCE -->
+        <div class="evidence-block">
+          <div class="evidence-label">Evidência · áudio suspeito</div>
+
+          <div class="audio-player">
+            <div class="audio-head">
+              <button class="play-btn">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              <div class="audio-info">
+                <div class="audio-title">audio-marina-aguiar-voto.mp3</div>
+                <div class="audio-duration">1:42 · captado de grupo WhatsApp</div>
+              </div>
+            </div>
+
+            <div class="audio-wave">
+              <div class="wave-bar played" style="height: 30%;"></div>
+              <div class="wave-bar played" style="height: 55%;"></div>
+              <div class="wave-bar played" style="height: 72%;"></div>
+              <div class="wave-bar played" style="height: 40%;"></div>
+              <div class="wave-bar played" style="height: 88%;"></div>
+              <div class="wave-bar active" style="height: 92%;"></div>
+              <div class="wave-bar" style="height: 65%;"></div>
+              <div class="wave-bar" style="height: 48%;"></div>
+              <div class="wave-bar" style="height: 72%;"></div>
+              <div class="wave-bar" style="height: 55%;"></div>
+              <div class="wave-bar" style="height: 82%;"></div>
+              <div class="wave-bar" style="height: 44%;"></div>
+              <div class="wave-bar" style="height: 68%;"></div>
+              <div class="wave-bar" style="height: 58%;"></div>
+              <div class="wave-bar" style="height: 40%;"></div>
+              <div class="wave-bar" style="height: 72%;"></div>
+              <div class="wave-bar" style="height: 50%;"></div>
+              <div class="wave-bar" style="height: 85%;"></div>
+              <div class="wave-bar" style="height: 60%;"></div>
+              <div class="wave-bar" style="height: 45%;"></div>
+              <div class="wave-bar" style="height: 70%;"></div>
+              <div class="wave-bar" style="height: 55%;"></div>
+              <div class="wave-bar" style="height: 35%;"></div>
+              <div class="wave-bar" style="height: 62%;"></div>
+            </div>
+
+            <div class="audio-analysis">
+              <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div class="audio-analysis-text">
+                <strong>Análise forense de áudio:</strong> edição detectada entre 00:47 e 00:52 (corte abrupto de pista). Voz compatível com Marina Aguiar, mas contexto sonoro descontínuo. <strong>Manipulação confirmada.</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPARISON -->
+        <div class="evidence-block">
+          <div class="evidence-label">Comparação · áudio vs. histórico real</div>
+
+          <div class="comparison">
+
+            <div class="comp-row">
+              <div class="comp-header">
+                <span class="comp-badge fake">Áudio falso</span>
+                <span class="comp-date">Circulando desde 21/Abr · 09h30</span>
+              </div>
+              <p class="comp-quote fake">"…votei contra o piso da enfermagem em 2022, porque não concordo com aumento de gasto público…"</p>
+              <div class="comp-source">Origem identificada: encaminhamento em grupo de Contagem</div>
+            </div>
+
+            <div class="comp-row">
+              <div class="comp-header">
+                <span class="comp-badge real">Fala real</span>
+                <span class="comp-date">Sessão ALMG · 14/Jul/2022</span>
+              </div>
+              <p class="comp-quote real">"Votei <strong>a favor</strong> do piso da enfermagem. Meu voto está registrado no painel e meu discurso está nos anais da Casa."</p>
+              <div class="comp-source">Fonte: <a>Diário da ALMG · sessão 142/2022</a> · <a>vídeo oficial (13:42)</a></div>
+            </div>
+
+            <div class="comp-row">
+              <div class="comp-header">
+                <span class="comp-badge real">Cobertura imprensa</span>
+                <span class="comp-date">Portal ALMG · 14/Jul/2022</span>
+              </div>
+              <p class="comp-quote real">"Aprovação do piso salarial da enfermagem em MG: <strong>45 votos favoráveis</strong>, incluindo o da deputada Marina Aguiar."</p>
+              <div class="comp-source">Fonte oficial: <a>almg.gov.br/noticia/piso-enfermagem-2022</a></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SPREAD -->
+      <div class="spread-section">
+        <div class="spread-head">
+          <div class="spread-title">Propagação <em>em tempo real</em></div>
+          <div class="spread-meta">340 compartilhamentos · ~18K impactados</div>
+        </div>
+
+        <div class="spread-timeline">
+          <div class="timeline-line"></div>
+
+          <div class="timeline-item first">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="place">Grupo "Política Contagem 🇧🇷"</div>
+              <div class="detail">3.200 membros · origem provável · primeira ocorrência</div>
+            </div>
+            <div class="timeline-count">—</div>
+            <div class="timeline-time">09:30</div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="place">5 grupos da região metropolitana</div>
+              <div class="detail">Contagem, Betim, Ribeirão das Neves · mesmo áudio encaminhado</div>
+            </div>
+            <div class="timeline-count">142 shares</div>
+            <div class="timeline-time">10:12</div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="place">Página "Voz do Povo MG" (Facebook)</div>
+              <div class="detail">12K seguidores · recortou áudio em vídeo</div>
+            </div>
+            <div class="timeline-count">84 shares</div>
+            <div class="timeline-time">10:48</div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="place">X / Twitter · 3 perfis anônimos</div>
+              <div class="detail">Contas criadas em 2025 · padrão coordenado</div>
+            </div>
+            <div class="timeline-count">114 shares</div>
+            <div class="timeline-time">10:51 — agora</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="case-actions">
+        <div class="actions-left">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Evidências armazenadas com hash criptográfico · pronto para representação jurídica
+        </div>
+        <div class="actions-right">
+          <button class="btn">Ver registros técnicos</button>
+          <button class="btn">Gerar representação TSE</button>
+          <button class="btn-danger btn">Acionar protocolo de crise</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- HISTORY SECTION -->
+    <div class="section-heading">
+      <h2>Casos <em>anteriores</em></h2>
+      <span class="section-heading-meta">Últimos 30 dias · 8 resolvidos</span>
+    </div>
+
+    <div class="history-list">
+
+      <!-- History 1 -->
+      <div class="history-item resolved">
+        <div class="history-status">
+          <div class="history-icon resolved">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="title">Print fake de suposta postagem da Marina sobre veto à reforma tributária</div>
+          <div class="meta">Imagem editada com DeepFake · origem identificada · removida das plataformas</div>
+        </div>
+        <div class="history-tags">
+          <span class="history-tag resolved">Resolvido</span>
+        </div>
+        <div class="history-date">18 Abr · 14:22</div>
+      </div>
+
+      <!-- History 2 -->
+      <div class="history-item action">
+        <div class="history-status">
+          <div class="history-icon action">
+            <svg viewBox="0 0 24 24"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="title">Notícia falsa: "Marina apoia privatização da Copasa"</div>
+          <div class="meta">Site de desinformação · ação judicial protocolada · aguardando resposta</div>
+        </div>
+        <div class="history-tags">
+          <span class="history-tag action">Ação jurídica</span>
+        </div>
+        <div class="history-date">11 Abr · 09:04</div>
+      </div>
+
+      <!-- History 3 -->
+      <div class="history-item resolved">
+        <div class="history-status">
+          <div class="history-icon resolved">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="title">Vídeo deepfake com declaração falsa sobre segurança pública</div>
+          <div class="meta">IA generativa · detectado em 18 min · 2.3K pessoas alcançadas · nota oficial publicada</div>
+        </div>
+        <div class="history-tags">
+          <span class="history-tag resolved">Resolvido</span>
+        </div>
+        <div class="history-date">04 Abr · 22:18</div>
+      </div>
+
+      <!-- History 4 -->
+      <div class="history-item rejected">
+        <div class="history-status">
+          <div class="history-icon rejected">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="title">Alegação de "viagem internacional com dinheiro público"</div>
+          <div class="meta">Falso positivo · análise confirmou viagem foi paga com recursos próprios · baixo alcance</div>
+        </div>
+        <div class="history-tags">
+          <span class="history-tag rejected">Descartado</span>
+        </div>
+        <div class="history-date">29 Mar · 16:44</div>
+      </div>
+
+      <!-- History 5 -->
+      <div class="history-item resolved">
+        <div class="history-status">
+          <div class="history-icon resolved">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <div class="history-content">
+          <div class="title">Captura de tela adulterada de suposto tweet ofensivo</div>
+          <div class="meta">Fonte original nunca existiu · análise de metadados evidenciou edição · denunciado ao TSE</div>
+        </div>
+        <div class="history-tags">
+          <span class="history-tag resolved">Resolvido</span>
+        </div>
+        <div class="history-date">22 Mar · 11:30</div>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

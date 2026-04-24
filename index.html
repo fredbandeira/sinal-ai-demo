@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Demonstração navegável</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+a { text-decoration: none; color: inherit; }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 22px 48px;
+  background: rgba(10, 10, 11, 0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-logo { display: flex; align-items: center; gap: 12px; }
+.top-logo-mark { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+.top-logo-dot { width: 9px; height: 9px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.top-logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.top-logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.top-logo-ring.r2 { width: 24px; height: 24px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.top-logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.top-logo-text em { font-style: italic; color: var(--signal); }
+
+.top-nav { display: flex; gap: 24px; align-items: center; }
+.top-link { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: color 0.15s ease; }
+.top-link:hover { color: var(--mist); }
+.top-cta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  background: var(--signal);
+  color: var(--ink);
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+.top-cta:hover { background: var(--signal-dim); }
+
+/* ===== HERO ===== */
+.hero {
+  padding: 120px 48px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-kicker::before { content: ''; width: 32px; height: 1px; background: var(--signal); }
+.hero-kicker .live { width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--signal); margin-left: 8px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 108px;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--mist);
+  margin-bottom: 32px;
+  max-width: 1100px;
+}
+.hero-title em { font-style: italic; color: var(--signal); }
+
+.hero-desc {
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.45;
+  color: var(--mist-dim);
+  max-width: 760px;
+  font-style: italic;
+  margin-bottom: 40px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+.meta-item {}
+.meta-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 8px; }
+.meta-value { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--mist); letter-spacing: -0.02em; }
+.meta-value em { font-style: italic; color: var(--signal); }
+.meta-sub { font-family: var(--font-mono); font-size: 11px; color: var(--fog); margin-top: 5px; letter-spacing: 0.03em; }
+
+/* ===== INSTRUÇÕES ===== */
+.how-to {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 48px;
+  background: var(--ink-soft);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.how-to-inner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+.how-to-item { display: flex; gap: 16px; align-items: flex-start; }
+.how-to-num {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 0.9;
+  color: var(--signal);
+  letter-spacing: -0.04em;
+  font-style: italic;
+  flex-shrink: 0;
+  width: 40px;
+}
+.how-to-body {}
+.how-to-title { font-size: 14px; color: var(--mist); font-weight: 600; margin-bottom: 6px; }
+.how-to-desc { font-size: 13px; color: var(--mist-dim); line-height: 1.55; }
+
+/* ===== SECTION ===== */
+.section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 72px 48px;
+}
+
+.section-head { margin-bottom: 40px; max-width: 820px; }
+.section-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-kicker::before { content: ''; width: 24px; height: 1px; background: var(--signal); }
+
+.section-title { font-family: var(--font-display); font-size: 52px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); margin-bottom: 18px; }
+.section-title em { font-style: italic; color: var(--signal); }
+.section-desc { font-size: 16px; color: var(--mist-dim); line-height: 1.6; max-width: 640px; }
+
+/* ===== CARD GRID ===== */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.grid.two { grid-template-columns: repeat(2, 1fr); }
+.grid.single { grid-template-columns: 1fr; max-width: 640px; }
+
+.card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  min-height: 260px;
+}
+.card:hover {
+  border-color: var(--signal);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--signal-glow);
+}
+.card:hover .card-arrow { transform: translate(4px, -4px); color: var(--signal); }
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-num {
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: var(--mist);
+  opacity: 0.14;
+  font-style: italic;
+}
+
+.card-arrow {
+  color: var(--fog);
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+.card-arrow svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+.card-body { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--mist);
+}
+.card-title em { font-style: italic; color: var(--signal); }
+
+.card-desc {
+  font-size: 13.5px;
+  color: var(--mist-dim);
+  line-height: 1.5;
+}
+
+.card-foot {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--signal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  background: var(--signal-glow);
+  border-radius: 5px;
+  font-weight: 600;
+}
+.card-tag.editorial { color: var(--caution); background: rgba(244, 197, 68, 0.1); }
+.card-tag.intel { color: var(--info); background: rgba(127, 168, 232, 0.1); }
+.card-tag.crit { color: var(--negative); background: rgba(240, 93, 94, 0.1); }
+.card-tag.gov { color: var(--positive); background: rgba(109, 214, 125, 0.1); }
+.card-tag.setup { color: var(--mist-dim); background: var(--ink-softer); }
+
+.card-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fog);
+  letter-spacing: 0.05em;
+}
+
+/* FEATURED (destaque) */
+.card.featured {
+  border-color: var(--signal);
+  border-left: 3px solid var(--signal);
+  padding-left: 25px;
+  background: linear-gradient(135deg, var(--ink-soft) 0%, rgba(197, 242, 74, 0.02) 100%);
+}
+
+/* ===== DOCS SECTION ===== */
+.docs-section {
+  background: var(--ink-soft);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 72px 48px;
+}
+.docs-inner { max-width: 1400px; margin: 0 auto; }
+
+.docs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 32px; }
+
+.doc-card {
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 160px;
+}
+.doc-card:hover { border-color: var(--signal); background: var(--ink-softer); }
+
+.doc-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--ink-softer);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.doc-icon svg { width: 14px; height: 14px; stroke: var(--signal); fill: none; stroke-width: 1.5; }
+
+.doc-title { font-family: var(--font-display); font-size: 20px; line-height: 1.15; letter-spacing: -0.02em; color: var(--mist); }
+.doc-title em { font-style: italic; color: var(--signal); }
+
+.doc-desc { font-size: 12px; color: var(--fog); line-height: 1.5; flex: 1; }
+
+.doc-format {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--signal);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== PATH SUGGESTION ===== */
+.path-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 72px 48px;
+}
+
+.path-card {
+  background: var(--signal);
+  color: var(--ink);
+  border-radius: 20px;
+  padding: 56px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.path-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(10,10,11,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.path-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.65;
+  margin-bottom: 20px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.path-title {
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+.path-title em { font-style: italic; }
+
+.path-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  opacity: 0.85;
+  max-width: 560px;
+  position: relative;
+  z-index: 1;
+}
+
+.path-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.path-step {
+  background: var(--ink);
+  color: var(--mist);
+  padding: 14px 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s ease;
+}
+.path-step:hover { background: var(--ink-softer); }
+
+.path-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--signal);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.path-step-text { flex: 1; }
+.path-step-text small { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 2px; letter-spacing: 0.03em; }
+.path-step-arrow { color: var(--signal); }
+.path-step-arrow svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 48px;
+  background: var(--ink);
+  border-top: 1px solid var(--border);
+}
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-brand { font-family: var(--font-display); font-size: 18px; color: var(--mist); display: flex; align-items: center; gap: 12px; }
+.footer-brand em { font-style: italic; color: var(--signal); }
+.footer-mark { width: 18px; height: 18px; border-radius: 50%; background: var(--signal); position: relative; }
+
+.footer-note { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .docs-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-title { font-size: 72px; }
+  .hero-desc { font-size: 22px; }
+  .path-card { grid-template-columns: 1fr; }
+  .how-to-inner { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (max-width: 700px) {
+  .topbar { padding: 16px 20px; }
+  .hero { padding: 60px 20px 40px; }
+  .hero-title { font-size: 48px; }
+  .hero-desc { font-size: 18px; }
+  .section { padding: 48px 20px; }
+  .section-title { font-size: 36px; }
+  .grid { grid-template-columns: 1fr; }
+  .docs-grid { grid-template-columns: 1fr; }
+  .docs-section { padding: 48px 20px; }
+  .path-section { padding: 48px 20px; }
+  .path-card { padding: 32px; }
+  .path-title { font-size: 30px; }
+  .hero-meta { gap: 24px; }
+  .top-nav .top-link { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="topbar">
+  <a href="index.html" class="top-logo">
+    <div class="top-logo-mark">
+      <div class="top-logo-ring r1"></div>
+      <div class="top-logo-ring r2"></div>
+      <div class="top-logo-dot"></div>
+    </div>
+    <div class="top-logo-text">sinal<em>.ai</em></div>
+  </a>
+
+  <div class="top-nav">
+    <a class="top-link" href="#produto">Produto</a>
+    <a class="top-link" href="#documentos">Documentos</a>
+    <a class="top-link" href="#trajeto">Trajeto sugerido</a>
+    <a href="sinal-01-dashboard.html" class="top-cta">Entrar no produto →</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-kicker">
+    Demonstração navegável <span class="live"></span>
+  </div>
+  <h1 class="hero-title">A plataforma de inteligência política que funciona da <em>pré-campanha ao quarto ano de mandato.</em></h1>
+  <p class="hero-desc">
+    Com IA treinada na voz do candidato, integrada ao seu trabalho real e nativamente
+    compliant com a Resolução TSE 2026.
+  </p>
+
+  <div class="hero-meta">
+    <div class="meta-item">
+      <div class="meta-label">Telas do MVP</div>
+      <div class="meta-value"><em>13</em></div>
+      <div class="meta-sub">Em alta fidelidade</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Núcleos funcionais</div>
+      <div class="meta-value">6</div>
+      <div class="meta-sub">Operação, inteligência, governança</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Persona de demo</div>
+      <div class="meta-value">Marina A.</div>
+      <div class="meta-sub">Dep. Estadual · MG · fictícia</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Fio condutor</div>
+      <div class="meta-value">#2847</div>
+      <div class="meta-sub">Emenda · Hospital de Betim</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW TO ===== -->
+<section class="how-to">
+  <div class="how-to-inner">
+    <div class="how-to-item">
+      <div class="how-to-num">01</div>
+      <div class="how-to-body">
+        <div class="how-to-title">Navegue pelas telas</div>
+        <div class="how-to-desc">Clique em qualquer card abaixo para entrar na tela. O sidebar esquerdo dentro de cada tela também navega para as outras.</div>
+      </div>
+    </div>
+    <div class="how-to-item">
+      <div class="how-to-num">02</div>
+      <div class="how-to-body">
+        <div class="how-to-title">Explore a narrativa</div>
+        <div class="how-to-desc">Marina, o Hospital de Betim e a fake news em Contagem atravessam todas as telas. Tudo se conecta.</div>
+      </div>
+    </div>
+    <div class="how-to-item">
+      <div class="how-to-num">03</div>
+      <div class="how-to-body">
+        <div class="how-to-title">Volte para esta página</div>
+        <div class="how-to-desc">Clique no logo Sinal no topo de qualquer tela para voltar a este índice.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRODUTO — Núcleos ===== -->
+<section class="section" id="produto">
+  <div class="section-head">
+    <div class="section-kicker">O produto · 13 telas</div>
+    <h2 class="section-title">Uma operação política <em>completa.</em></h2>
+    <p class="section-desc">
+      As 13 telas do MVP organizadas em 5 núcleos funcionais. Comece pelo Dashboard
+      se quiser a visão geral, ou pela tela específica do tema que te interessa.
+    </p>
+  </div>
+
+  <!-- Núcleo 1: Operação Diária -->
+  <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 18px; font-weight: 600;">01 · Operação diária</h3>
+
+  <div class="grid" style="margin-bottom: 48px;">
+
+    <a class="card featured" href="sinal-01-dashboard.html">
+      <div class="card-head">
+        <div class="card-num">01</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Dashboard <em>principal</em></h4>
+        <p class="card-desc">Placar em tempo real do mandato. Score de reputação, menções, alertas, agenda e sugestões de post do dia, tudo em um olhar.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Tela-mãe</span>
+        <span class="card-meta">início recomendado</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-02-gerador-posts.html">
+      <div class="card-head">
+        <div class="card-num">02</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Gerador <em>de posts</em></h4>
+        <p class="card-desc">Sugestões de conteúdo geradas a partir do trabalho real do parlamentar — emendas, agenda, efemérides cruzadas com voz calibrada.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Conteúdo</span>
+        <span class="card-meta">23 sugestões ativas</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-03-editor-post.html">
+      <div class="card-head">
+        <div class="card-num">03</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Editor <em>de post</em></h4>
+        <p class="card-desc">Onde a mágica do fine-tuning acontece. Variações da IA, preview do Instagram, contexto da fonte de dado e compliance em tempo real.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Conteúdo</span>
+        <span class="card-meta">4 variações por peça</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-04-calendario.html">
+      <div class="card-head">
+        <div class="card-num">04</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Calendário <em>editorial</em></h4>
+        <p class="card-desc">Semana inteira por canal (Feed, Reels, Stories, WhatsApp, X). Balanceamento automático de pauta e sugestões da IA.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Conteúdo</span>
+        <span class="card-meta">47 peças / 7 dias</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-05-banco-respostas.html">
+      <div class="card-head">
+        <div class="card-num">05</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Banco de <em>respostas</em></h4>
+        <p class="card-desc">Voz do candidato em escala. Respostas pré-aprovadas com gatilhos semânticos e dados dinâmicos para atendimento automático.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Conteúdo</span>
+        <span class="card-meta">47 respostas · 89% cobertura</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-06-atendimento-whatsapp.html">
+      <div class="card-head">
+        <div class="card-num">06</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Atendimento <em>WhatsApp</em></h4>
+        <p class="card-desc">Caixa de conversas em tempo real. IA responde, humano intervém. Classificação automática de contatos por perfil.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag">Conteúdo</span>
+        <span class="card-meta">218 conversas ativas</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Núcleo 2: Editorial -->
+  <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 18px; font-weight: 600;">02 · Editorial</h3>
+
+  <div class="grid single" style="margin-bottom: 48px;">
+
+    <a class="card featured" href="sinal-07-jornal-diario.html" style="min-height: 220px;">
+      <div class="card-head">
+        <div class="card-num">07</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Jornal <em>diário</em></h4>
+        <p class="card-desc">Curadoria editorial em papel cremoso — o dia do candidato em três cenas. Prova de entrega, movimentos adversários, oportunidade de posicionamento. Enviável à assessoria em um clique.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag editorial">Output editorial</span>
+        <span class="card-meta">segunda linguagem da marca</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Núcleo 3: Inteligência -->
+  <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 18px; font-weight: 600;">03 · Inteligência</h3>
+
+  <div class="grid" style="margin-bottom: 48px;">
+
+    <a class="card" href="sinal-08-escuta-social.html">
+      <div class="card-head">
+        <div class="card-num">08</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Escuta <em>social</em></h4>
+        <p class="card-desc">Monitoramento 360° de menções em 8 canais. Temas em alta, vozes relevantes, sentimento em tempo real.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag intel">Inteligência</span>
+        <span class="card-meta">1.247 menções / 24h</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-09-fake-news.html">
+      <div class="card-head">
+        <div class="card-num">09</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Detector de <em>fake news</em></h4>
+        <p class="card-desc">Defesa reputacional com análise forense de áudio, comparação com histórico real, timeline de propagação e representação TSE pronta.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag crit">Defesa ativa</span>
+        <span class="card-meta">1 caso crítico agora</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-10-adversarios.html">
+      <div class="card-head">
+        <div class="card-num">10</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Análise de <em>adversários</em></h4>
+        <p class="card-desc">Share of voice no distrito, matriz temática de concorrentes, detecção de silêncios e oportunidades de dominância.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag intel">Inteligência</span>
+        <span class="card-meta">34% share de voz</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Núcleo 4: Governança -->
+  <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 18px; font-weight: 600;">04 · Governança</h3>
+
+  <div class="grid two" style="margin-bottom: 48px;">
+
+    <a class="card featured" href="sinal-11-compliance.html" style="min-height: 220px;">
+      <div class="card-head">
+        <div class="card-num">11</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Central de <em>compliance</em></h4>
+        <p class="card-desc">Score 96/100. Trilha de auditoria com hash criptográfico, blackout TSE programado, rotulagem automática e normas cobertas. A tela do advogado eleitoral.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag gov">Blindagem jurídica</span>
+        <span class="card-meta">Res. TSE 23.732/2026</span>
+      </div>
+    </a>
+
+    <a class="card" href="sinal-13-configuracoes.html" style="min-height: 220px;">
+      <div class="card-head">
+        <div class="card-num">13</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Configurações <em>e equipe</em></h4>
+        <p class="card-desc">Papéis, permissões, fluxo de aprovação em 4 níveis, integrações, setup score. Onde tudo se consolida.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag gov">Governança</span>
+        <span class="card-meta">5 pessoas · 87% setup</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Núcleo 5: Onboarding -->
+  <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 18px; font-weight: 600;">05 · Onboarding do candidato</h3>
+
+  <div class="grid single">
+
+    <a class="card" href="sinal-12-onboarding-voz.html" style="min-height: 200px;">
+      <div class="card-head">
+        <div class="card-num">12</div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></div>
+      </div>
+      <div class="card-body">
+        <h4 class="card-title">Onboarding · <em>sua voz</em></h4>
+        <p class="card-desc">Passo 3 do setup inicial. Fine-tuning da IA na voz do candidato — cole posts, envie peças antigas, responda 5 perguntas. Calibração em tempo real.</p>
+      </div>
+      <div class="card-foot">
+        <span class="card-tag setup">Setup guiado · 1º acesso</span>
+        <span class="card-meta">tela sem sidebar</span>
+      </div>
+    </a>
+
+  </div>
+
+</section>
+
+<!-- ===== DOCS SECTION ===== -->
+<section class="docs-section" id="documentos">
+  <div class="docs-inner">
+    <div class="section-head">
+      <div class="section-kicker">Documentos estratégicos</div>
+      <h2 class="section-title">O pensamento <em>por trás</em> do produto.</h2>
+      <p class="section-desc">
+        Antes das telas, veio a estratégia. Quatro documentos fundam o Sinal.ai —
+        do guia de campanha ao manual de identidade visual.
+      </p>
+    </div>
+
+    <div class="docs-grid">
+
+      <a class="doc-card" href="Guia-Mestre-Campanha-Deputado.docx" download>
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4 class="doc-title">Guia-mestre <em>de campanha</em></h4>
+        <p class="doc-desc">Estratégia para candidatura a deputado: pilares, cronograma, checklist.</p>
+        <div class="doc-format">DOCX · estratégico</div>
+      </a>
+
+      <a class="doc-card" href="PRD-v0-Plataforma-IA-Campanha.docx" download>
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h4 class="doc-title">PRD <em>v0</em></h4>
+        <p class="doc-desc">Product Requirements Document completo — escopo, arquitetura, funcionalidades.</p>
+        <div class="doc-format">DOCX · produto</div>
+      </a>
+
+      <a class="doc-card" href="Identidade-v0-Manual.docx" download>
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </div>
+        <h4 class="doc-title">Manual de <em>identidade</em></h4>
+        <p class="doc-desc">Sistema visual completo — paleta, tipografia, aplicações, brief de logo.</p>
+        <div class="doc-format">DOCX · marca</div>
+      </a>
+
+      <a class="doc-card" href="identidade-v0.html">
+        <div class="doc-icon">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h4 class="doc-title">Identidade <em>interativa</em></h4>
+        <p class="doc-desc">Artefato HTML da marca — pode ser navegado para ver o sistema na prática.</p>
+        <div class="doc-format">HTML · interativa</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== PATH SECTION ===== -->
+<section class="path-section" id="trajeto">
+
+  <div class="path-card">
+    <div>
+      <div class="path-kicker">Trajeto sugerido · 10 minutos</div>
+      <h2 class="path-title">Se você só tem <em>dez minutos</em>, siga por aqui.</h2>
+      <p class="path-desc">
+        Esses 5 passos te levam pelo argumento completo do produto — da operação ao
+        diferencial jurídico. É a ordem que melhor conta a história.
+      </p>
+    </div>
+
+    <div class="path-steps">
+
+      <a class="path-step" href="sinal-01-dashboard.html">
+        <div class="path-step-num">1</div>
+        <div class="path-step-text">
+          Dashboard
+          <small>a foto do mandato em tempo real</small>
+        </div>
+        <div class="path-step-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </a>
+
+      <a class="path-step" href="sinal-03-editor-post.html">
+        <div class="path-step-num">2</div>
+        <div class="path-step-text">
+          Editor de post
+          <small>como a IA escreve na voz do candidato</small>
+        </div>
+        <div class="path-step-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </a>
+
+      <a class="path-step" href="sinal-07-jornal-diario.html">
+        <div class="path-step-num">3</div>
+        <div class="path-step-text">
+          Jornal diário
+          <small>a identidade editorial em ação</small>
+        </div>
+        <div class="path-step-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </a>
+
+      <a class="path-step" href="sinal-09-fake-news.html">
+        <div class="path-step-num">4</div>
+        <div class="path-step-text">
+          Detector de fake news
+          <small>a defesa reputacional na prática</small>
+        </div>
+        <div class="path-step-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </a>
+
+      <a class="path-step" href="sinal-11-compliance.html">
+        <div class="path-step-num">5</div>
+        <div class="path-step-text">
+          Compliance
+          <small>o argumento que fecha a venda</small>
+        </div>
+        <div class="path-step-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </a>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-mark"></div>
+      <span>sinal<em>.ai</em> · demonstração navegável v1</span>
+    </div>
+    <div class="footer-note">
+      13 telas + 4 documentos · persona fictícia · MVP para apresentação
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

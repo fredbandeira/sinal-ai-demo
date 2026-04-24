@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Atendimento</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; height: 100vh; overflow: hidden; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; height: 100vh; display: flex; flex-direction: column; overflow-y: auto; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ===== MAIN ===== */
+.main-wrapper { display: grid; grid-template-columns: 380px 1fr 320px; height: 100vh; }
+
+/* ===== CONVERSATIONS LIST (LEFT) ===== */
+.convs-panel { background: var(--ink); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+
+.convs-header { padding: 20px 20px 14px; border-bottom: 1px solid var(--border); }
+.convs-title { font-family: var(--font-display); font-size: 28px; letter-spacing: -0.02em; color: var(--mist); line-height: 1; }
+.convs-title em { font-style: italic; color: var(--signal); }
+.convs-sub { font-size: 12px; color: var(--fog); margin-top: 6px; display: flex; align-items: center; gap: 8px; }
+.convs-sub .live-dot { width: 6px; height: 6px; background: var(--positive); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--positive); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.convs-search { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.search-input-wrap { display: flex; align-items: center; gap: 10px; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.search-input-wrap svg { stroke: var(--fog); flex-shrink: 0; }
+.search-input-wrap input { flex: 1; background: transparent; border: none; color: var(--mist); font-size: 13px; outline: none; }
+.search-input-wrap input::placeholder { color: var(--fog-soft); }
+
+.convs-filters { display: flex; gap: 4px; padding: 10px 16px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.convs-filters::-webkit-scrollbar { display: none; }
+.filter-tab { font-family: var(--font-mono); font-size: 10px; padding: 6px 10px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--fog); cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; font-weight: 500; }
+.filter-tab:hover { color: var(--mist); }
+.filter-tab.active { background: var(--ink-soft); color: var(--mist); border-color: var(--border-hover); }
+.filter-tab .count { color: var(--fog-soft); margin-left: 4px; }
+.filter-tab.active .count { color: var(--signal); }
+
+.convs-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+.convs-list::-webkit-scrollbar { width: 6px; }
+.convs-list::-webkit-scrollbar-thumb { background: var(--ink-softer); border-radius: 3px; }
+
+.conv-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  align-items: flex-start;
+  transition: background 0.15s ease;
+  position: relative;
+}
+.conv-item:hover { background: var(--ink-soft); }
+.conv-item.active { background: var(--ink-soft); }
+.conv-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--signal); }
+.conv-item.unread { background: rgba(197, 242, 74, 0.02); }
+
+.conv-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ink-softer);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--mist);
+  font-weight: 600;
+  border: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+}
+.conv-avatar.tag-apoiador { background: rgba(109, 214, 125, 0.1); color: var(--positive); border-color: var(--positive); }
+.conv-avatar.tag-indeciso { background: rgba(244, 197, 68, 0.1); color: var(--caution); border-color: var(--caution); }
+.conv-avatar.tag-critico { background: rgba(240, 93, 94, 0.1); color: var(--negative); border-color: var(--negative); }
+
+.conv-avatar .status-ring {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+}
+.conv-avatar .status-ring.ai { background: var(--signal); }
+.conv-avatar .status-ring.human { background: var(--info); }
+.conv-avatar .status-ring.pending { background: var(--caution); }
+
+.conv-body { min-width: 0; }
+.conv-top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+.conv-name { font-size: 13px; font-weight: 600; color: var(--mist); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-time { font-family: var(--font-mono); font-size: 10px; color: var(--fog); flex-shrink: 0; margin-left: 8px; letter-spacing: 0.03em; }
+
+.conv-city { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-bottom: 4px; letter-spacing: 0.03em; text-transform: uppercase; }
+
+.conv-preview { font-size: 12.5px; color: var(--mist-dim); line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-item.unread .conv-preview { color: var(--mist); font-weight: 500; }
+
+.conv-tags { display: flex; gap: 4px; margin-top: 6px; }
+.conv-tag { font-family: var(--font-mono); font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.conv-tag.ai { background: var(--signal-glow); color: var(--signal); }
+.conv-tag.human { background: rgba(127, 168, 232, 0.15); color: var(--info); }
+.conv-tag.attention { background: rgba(244, 197, 68, 0.15); color: var(--caution); }
+
+.conv-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.conv-unread-count { background: var(--signal); color: var(--ink); font-family: var(--font-mono); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px; min-width: 20px; text-align: center; }
+
+/* ===== CHAT PANEL (CENTER) ===== */
+.chat-panel { display: flex; flex-direction: column; overflow: hidden; background: var(--ink); }
+
+.chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--ink); }
+
+.chat-header-left { display: flex; align-items: center; gap: 14px; }
+.chat-header-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(109, 214, 125, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--positive);
+  font-weight: 600;
+  border: 1px solid var(--positive);
+}
+.chat-header-info .name { font-size: 15px; font-weight: 600; color: var(--mist); display: flex; align-items: center; gap: 8px; }
+.chat-header-info .name .classification { font-family: var(--font-mono); font-size: 10px; color: var(--positive); padding: 2px 7px; background: rgba(109, 214, 125, 0.1); border-radius: 4px; letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid rgba(109, 214, 125, 0.3); }
+.chat-header-info .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); margin-top: 2px; display: flex; gap: 10px; letter-spacing: 0.03em; }
+.chat-header-info .meta .dot { color: var(--fog-softer); }
+
+.chat-header-actions { display: flex; gap: 8px; align-items: center; }
+
+.ai-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ink-soft);
+  border: 1px solid var(--signal);
+  padding: 7px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.ai-mode-toggle .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--signal); animation: pulse 2s infinite; box-shadow: 0 0 8px var(--signal); }
+.ai-mode-toggle .text { font-family: var(--font-mono); font-size: 11px; color: var(--signal); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+.ai-mode-toggle .switch { width: 26px; height: 14px; background: var(--signal); border-radius: 100px; position: relative; }
+.ai-mode-toggle .switch::after { content: ''; position: absolute; width: 10px; height: 10px; background: var(--ink); border-radius: 50%; top: 2px; right: 2px; }
+
+.icon-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.icon-btn:hover { border-color: var(--border-hover); }
+.icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* Messages */
+.messages-area { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; background: var(--ink); }
+.messages-area::-webkit-scrollbar { width: 6px; }
+.messages-area::-webkit-scrollbar-thumb { background: var(--ink-softer); border-radius: 3px; }
+
+.date-divider { text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.12em; text-transform: uppercase; padding: 8px 0; position: relative; }
+.date-divider::before, .date-divider::after { content: ''; position: absolute; top: 50%; width: 30%; height: 1px; background: var(--border); }
+.date-divider::before { left: 10%; }
+.date-divider::after { right: 10%; }
+
+.msg { display: flex; gap: 10px; max-width: 78%; }
+.msg.sent { align-self: flex-end; flex-direction: row-reverse; }
+
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  margin-top: 18px;
+}
+.msg.received .msg-avatar { background: rgba(109, 214, 125, 0.1); color: var(--positive); border-color: var(--positive); }
+.msg.sent.ai .msg-avatar { background: var(--signal); color: var(--ink); border-color: var(--signal); }
+.msg.sent.human .msg-avatar { background: var(--ink-soft); color: var(--info); border-color: var(--info); }
+
+.msg-body { display: flex; flex-direction: column; gap: 2px; }
+
+.msg-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); padding: 0 4px; }
+.msg.sent .msg-label { text-align: right; }
+.msg-label.ai { color: var(--signal); }
+.msg-label.human { color: var(--info); }
+
+.msg-bubble {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--mist);
+}
+.msg.received .msg-bubble {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+}
+.msg.sent.ai .msg-bubble {
+  background: var(--signal);
+  color: var(--ink);
+  border-top-right-radius: 4px;
+}
+.msg.sent.ai .msg-bubble strong { color: var(--ink); font-weight: 600; }
+.msg.sent.human .msg-bubble {
+  background: rgba(127, 168, 232, 0.1);
+  color: var(--mist);
+  border: 1px solid var(--info);
+  border-top-right-radius: 4px;
+}
+
+.msg-meta { display: flex; gap: 8px; font-family: var(--font-mono); font-size: 9px; color: var(--fog); padding: 0 4px; letter-spacing: 0.03em; margin-top: 2px; }
+.msg.sent .msg-meta { justify-content: flex-end; }
+.msg-meta .dot { color: var(--fog-softer); }
+.msg-meta .source { color: var(--signal); }
+.msg-meta .check { color: var(--positive); }
+
+/* Typing indicator */
+.typing { display: flex; gap: 10px; max-width: 78%; align-items: center; padding: 4px 0; }
+.typing-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--signal); color: var(--ink); border: 1px solid var(--signal); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 11px; font-weight: 600; }
+.typing-bubble { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; display: flex; gap: 4px; align-items: center; }
+.typing-bubble .dot { width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: bounce 1.4s infinite; }
+.typing-bubble .dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-bubble .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+.typing-text { font-family: var(--font-mono); font-size: 10px; color: var(--signal); letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px; }
+
+/* Input area */
+.input-area { padding: 16px 24px 20px; border-top: 1px solid var(--border); background: var(--ink); }
+
+.takeover-banner {
+  background: var(--signal-glow);
+  border: 1px solid var(--signal);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.takeover-banner .text { font-size: 12px; color: var(--mist); display: flex; align-items: center; gap: 8px; }
+.takeover-banner .text svg { width: 14px; height: 14px; stroke: var(--signal); fill: none; stroke-width: 2; }
+.takeover-banner .text strong { color: var(--signal); font-weight: 600; }
+.takeover-btn { font-family: var(--font-mono); font-size: 10px; padding: 5px 10px; background: var(--signal); color: var(--ink); border: none; border-radius: 5px; cursor: pointer; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.input-wrap { display: flex; gap: 10px; align-items: flex-end; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
+.input-wrap:focus-within { border-color: var(--signal); }
+.input-textarea { flex: 1; background: transparent; border: none; color: var(--mist); font-family: var(--font-body); font-size: 14px; line-height: 1.5; outline: none; resize: none; min-height: 24px; max-height: 120px; }
+.input-textarea::placeholder { color: var(--fog-soft); }
+.input-actions { display: flex; gap: 4px; align-items: center; }
+.input-icon-btn { width: 30px; height: 30px; border-radius: 6px; background: transparent; border: none; color: var(--fog); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.input-icon-btn:hover { background: var(--ink-softer); color: var(--mist); }
+.input-icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.send-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--signal); border: none; color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.send-btn:hover { background: var(--signal-dim); }
+.send-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+.input-hint { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 8px; padding: 0 4px; letter-spacing: 0.05em; display: flex; justify-content: space-between; }
+
+/* ===== RIGHT PANEL — CONTACT DETAILS ===== */
+.contact-panel { background: var(--ink); border-left: 1px solid var(--border); overflow-y: auto; padding: 20px; }
+.contact-panel::-webkit-scrollbar { width: 6px; }
+.contact-panel::-webkit-scrollbar-thumb { background: var(--ink-softer); border-radius: 3px; }
+
+.contact-head { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.contact-big-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  background: rgba(109, 214, 125, 0.1);
+  color: var(--positive);
+  border: 2px solid var(--positive);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+}
+.contact-big-name { font-family: var(--font-display); font-size: 22px; color: var(--mist); letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 4px; }
+.contact-phone { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.classification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(109, 214, 125, 0.1);
+  color: var(--positive);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 10px;
+  border: 1px solid rgba(109, 214, 125, 0.3);
+}
+.classification-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--positive); }
+
+.panel-block { margin-bottom: 22px; }
+.block-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 10px; display: flex; justify-content: space-between; }
+
+.info-grid { display: flex; flex-direction: column; gap: 6px; }
+.info-row { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--border); font-size: 12px; }
+.info-row:first-child { border-top: none; padding-top: 0; }
+.info-row .k { color: var(--fog); font-family: var(--font-mono); font-size: 11px; }
+.info-row .v { color: var(--mist); font-weight: 500; text-align: right; }
+.info-row .v.sig { color: var(--signal); }
+
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item { display: flex; gap: 10px; font-size: 12px; padding: 8px 0; border-top: 1px solid var(--border); }
+.history-item:first-child { border-top: none; padding-top: 0; }
+.history-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 6px; background: var(--fog); flex-shrink: 0; }
+.history-dot.msg { background: var(--signal); }
+.history-dot.event { background: var(--info); }
+.history-dot.action { background: var(--positive); }
+.history-content { flex: 1; }
+.history-title { font-size: 12px; color: var(--mist); line-height: 1.4; }
+.history-time { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 2px; letter-spacing: 0.03em; }
+
+.tag-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--mist-dim);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+.tag-chip:hover { border-color: var(--signal); color: var(--signal); }
+.tag-chip.active { background: var(--signal-glow); color: var(--signal); border-color: var(--signal); }
+
+/* Compliance inline */
+.compliance-mini {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.compliance-mini-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); font-weight: 600; }
+.compliance-mini-head svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+.compliance-mini p { font-size: 12px; color: var(--mist-dim); line-height: 1.5; }
+
+@media (max-width: 1280px) {
+  .contact-panel { display: none; }
+  .main-wrapper { grid-template-columns: 360px 1fr; }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main-wrapper { grid-template-columns: 1fr; }
+  .convs-panel { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Fake News<span class="nav-badge">1</span></a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div>
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main-wrapper">
+
+    <!-- ===== CONVERSATIONS LIST ===== -->
+    <aside class="convs-panel">
+
+      <div class="convs-header">
+        <h1 class="convs-title"><em>Caixa</em> de conversas</h1>
+        <div class="convs-sub">
+          <span class="live-dot"></span>
+          <span>218 conversas ativas · IA respondendo</span>
+        </div>
+      </div>
+
+      <div class="convs-search">
+        <div class="search-input-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input placeholder="Buscar por nome, número ou cidade…" />
+        </div>
+      </div>
+
+      <div class="convs-filters">
+        <button class="filter-tab active">Todas <span class="count">218</span></button>
+        <button class="filter-tab">IA <span class="count">184</span></button>
+        <button class="filter-tab">Humano <span class="count">23</span></button>
+        <button class="filter-tab">Atenção <span class="count">11</span></button>
+        <button class="filter-tab">Apoiadores</button>
+        <button class="filter-tab">Críticos</button>
+      </div>
+
+      <div class="convs-list">
+
+        <!-- Conv 1 - ACTIVE -->
+        <div class="conv-item active unread">
+          <div class="conv-avatar tag-apoiador">
+            JC
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">José Carlos Lima</div>
+              <div class="conv-time">agora</div>
+            </div>
+            <div class="conv-city">Betim · MG</div>
+            <div class="conv-preview">Marina, vi a notícia do hospital! Queria saber...</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">IA respondendo</span>
+            </div>
+          </div>
+          <div class="conv-right">
+            <div class="conv-unread-count">2</div>
+          </div>
+        </div>
+
+        <!-- Conv 2 - attention -->
+        <div class="conv-item unread">
+          <div class="conv-avatar tag-critico">
+            MS
+            <div class="status-ring pending"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Marcelo Silveira</div>
+              <div class="conv-time">2 min</div>
+            </div>
+            <div class="conv-city">Contagem · MG</div>
+            <div class="conv-preview">Aquele áudio que tá circulando é verdade?</div>
+            <div class="conv-tags">
+              <span class="conv-tag attention">Fake news</span>
+              <span class="conv-tag ai">IA resposta</span>
+            </div>
+          </div>
+          <div class="conv-right">
+            <div class="conv-unread-count">1</div>
+          </div>
+        </div>
+
+        <!-- Conv 3 -->
+        <div class="conv-item">
+          <div class="conv-avatar tag-indeciso">
+            AC
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Ana Carolina Fernandes</div>
+              <div class="conv-time">8 min</div>
+            </div>
+            <div class="conv-city">Sete Lagoas · MG</div>
+            <div class="conv-preview">Obrigada pela resposta! Vou acompanhar de perto.</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">Resolvido pela IA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 4 -->
+        <div class="conv-item">
+          <div class="conv-avatar">
+            RP
+            <div class="status-ring human"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Roberto Pires (Jornalista)</div>
+              <div class="conv-time">14 min</div>
+            </div>
+            <div class="conv-city">Itatiaia · BH</div>
+            <div class="conv-preview">Claro, posso pautar. Me passa mais detalhes da emenda...</div>
+            <div class="conv-tags">
+              <span class="conv-tag human">Bruno assumiu</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 5 -->
+        <div class="conv-item">
+          <div class="conv-avatar tag-apoiador">
+            LM
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Luzia Martins</div>
+              <div class="conv-time">22 min</div>
+            </div>
+            <div class="conv-city">Belo Horizonte · MG</div>
+            <div class="conv-preview">Posso divulgar aqui no grupo do bairro?</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">IA resposta</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 6 -->
+        <div class="conv-item">
+          <div class="conv-avatar tag-indeciso">
+            PE
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Paulo Esteves</div>
+              <div class="conv-time">35 min</div>
+            </div>
+            <div class="conv-city">Ribeirão das Neves · MG</div>
+            <div class="conv-preview">E como fica o posto de saúde do bairro?</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">IA resposta</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 7 -->
+        <div class="conv-item">
+          <div class="conv-avatar">
+            CT
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Carla Teixeira</div>
+              <div class="conv-time">1h</div>
+            </div>
+            <div class="conv-city">Betim · MG</div>
+            <div class="conv-preview">Vocês organizam visita técnica?</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">Resolvido pela IA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 8 -->
+        <div class="conv-item">
+          <div class="conv-avatar tag-critico">
+            DM
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Diogo Melo</div>
+              <div class="conv-time">1h</div>
+            </div>
+            <div class="conv-city">Contagem · MG</div>
+            <div class="conv-preview">Prefiro votar em alguém que faça de verdade</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">IA resposta</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conv 9 -->
+        <div class="conv-item">
+          <div class="conv-avatar tag-apoiador">
+            HG
+            <div class="status-ring ai"></div>
+          </div>
+          <div class="conv-body">
+            <div class="conv-top-row">
+              <div class="conv-name">Henrique Gomes</div>
+              <div class="conv-time">2h</div>
+            </div>
+            <div class="conv-city">Belo Horizonte · MG</div>
+            <div class="conv-preview">Parabéns Marina! Tá fazendo a diferença 👏</div>
+            <div class="conv-tags">
+              <span class="conv-tag ai">Prova social</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- ===== CHAT PANEL ===== -->
+    <section class="chat-panel">
+
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-header-avatar">JC</div>
+          <div class="chat-header-info">
+            <div class="name">
+              José Carlos Lima
+              <span class="classification">Apoiador</span>
+            </div>
+            <div class="meta">
+              <span>📍 Betim · MG</span>
+              <span class="dot">·</span>
+              <span>1º contato em Jan/2025</span>
+              <span class="dot">·</span>
+              <span>14 interações</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-header-actions">
+          <div class="ai-mode-toggle">
+            <span class="dot"></span>
+            <span class="text">IA ATIVA</span>
+            <span class="switch"></span>
+          </div>
+          <button class="icon-btn" title="Assumir conversa">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </button>
+          <button class="icon-btn" title="Mais">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="messages-area">
+
+        <div class="date-divider">Hoje · terça, 21 de abril</div>
+
+        <!-- Msg 1 received -->
+        <div class="msg received">
+          <div class="msg-avatar">JC</div>
+          <div class="msg-body">
+            <div class="msg-bubble">Marina, boa tarde!</div>
+            <div class="msg-meta"><span>14:38</span></div>
+          </div>
+        </div>
+
+        <div class="msg received">
+          <div class="msg-avatar">JC</div>
+          <div class="msg-body">
+            <div class="msg-bubble">Vi a notícia do hospital de Betim agora, parabéns! Queria saber uma coisa: tem como vocês ajudarem com o posto de saúde do meu bairro também? Tá abandonado há anos.</div>
+            <div class="msg-meta"><span>14:38</span></div>
+          </div>
+        </div>
+
+        <!-- Msg AI 1 -->
+        <div class="msg sent ai">
+          <div class="msg-avatar">IA</div>
+          <div class="msg-body">
+            <div class="msg-label ai">Sinal · IA · Resposta em 2.4s</div>
+            <div class="msg-bubble">Oi José Carlos! Obrigada por acompanhar 🙏
+
+Que bairro é o seu em Betim? Assim consigo te dizer exatamente o que já está em andamento por lá e o que podemos fazer juntos pra avançar com o posto.</div>
+            <div class="msg-meta">
+              <span class="source">#resposta-demanda-local</span>
+              <span class="dot">·</span>
+              <span>14:38</span>
+              <span class="dot">·</span>
+              <span class="check">✓✓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Msg received 2 -->
+        <div class="msg received">
+          <div class="msg-avatar">JC</div>
+          <div class="msg-body">
+            <div class="msg-bubble">Bairro Santa Cruz. O posto tá fechado três dias por semana, falta médico...</div>
+            <div class="msg-meta"><span>14:41</span></div>
+          </div>
+        </div>
+
+        <!-- Msg AI 2 -->
+        <div class="msg sent ai">
+          <div class="msg-avatar">IA</div>
+          <div class="msg-body">
+            <div class="msg-label ai">Sinal · IA · Resposta em 3.1s</div>
+            <div class="msg-bubble">Santa Cruz é exatamente onde apresentei a emenda <strong>#3142</strong> em março — R$ 680 mil para reforma e contratação de equipe. Está em análise no Fundo Nacional de Saúde.
+
+Quer que eu registre essa demanda específica (dias fechados, falta de médico) no sistema? Vira documento oficial que encaminhamos pra Secretaria Municipal junto com a cobrança da emenda.</div>
+            <div class="msg-meta">
+              <span class="source">#emenda-3142 · #registrar-demanda</span>
+              <span class="dot">·</span>
+              <span>14:41</span>
+              <span class="dot">·</span>
+              <span class="check">✓✓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Msg received 3 -->
+        <div class="msg received">
+          <div class="msg-avatar">JC</div>
+          <div class="msg-body">
+            <div class="msg-bubble">Sim por favor! Não sabia da emenda, vou contar aqui pra galera 👏</div>
+            <div class="msg-meta"><span>14:43</span></div>
+          </div>
+        </div>
+
+        <!-- Typing -->
+        <div class="typing">
+          <div class="typing-avatar">IA</div>
+          <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="typing-text">Sinal está compondo</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input -->
+      <div class="input-area">
+
+        <div class="takeover-banner">
+          <div class="text">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            <span><strong>IA no controle.</strong> A próxima resposta vai em 2-3 segundos. Quer assumir esta conversa?</span>
+          </div>
+          <button class="takeover-btn">Assumir</button>
+        </div>
+
+        <div class="input-wrap">
+          <textarea class="input-textarea" placeholder="Digite para enviar uma mensagem manual…"></textarea>
+          <div class="input-actions">
+            <button class="input-icon-btn" title="Emoji">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <button class="input-icon-btn" title="Anexo">
+              <svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <button class="input-icon-btn" title="Resposta pronta">
+              <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </button>
+            <button class="send-btn">
+              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="input-hint">
+          <span>⌘ + K para buscar respostas prontas · ⌘ + Enter para enviar</span>
+          <span>API WhatsApp Business · Oficial Meta</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ===== CONTACT DETAILS ===== -->
+    <aside class="contact-panel">
+
+      <div class="contact-head">
+        <div class="contact-big-avatar">JC</div>
+        <div class="contact-big-name">José Carlos Lima</div>
+        <div class="contact-phone">+55 31 9 8842-3187</div>
+        <div class="classification-badge">Apoiador</div>
+      </div>
+
+      <div class="panel-block">
+        <div class="block-label">
+          <span>Dados do contato</span>
+          <span style="color: var(--fog);">Editar</span>
+        </div>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="k">cidade</span>
+            <span class="v">Betim · MG</span>
+          </div>
+          <div class="info-row">
+            <span class="k">bairro</span>
+            <span class="v">Santa Cruz</span>
+          </div>
+          <div class="info-row">
+            <span class="k">primeiro_contato</span>
+            <span class="v">12 Jan 2025</span>
+          </div>
+          <div class="info-row">
+            <span class="k">interações_total</span>
+            <span class="v">14</span>
+          </div>
+          <div class="info-row">
+            <span class="k">influência_local</span>
+            <span class="v sig">Alta · grupo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <div class="block-label">Tags</div>
+        <div class="tag-chips">
+          <span class="tag-chip active">Saúde</span>
+          <span class="tag-chip active">Betim</span>
+          <span class="tag-chip active">Multiplicador</span>
+          <span class="tag-chip">Voluntário</span>
+          <span class="tag-chip">+ tag</span>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <div class="block-label">
+          <span>Histórico recente</span>
+          <span style="color: var(--signal); cursor: pointer;">Ver tudo</span>
+        </div>
+        <div class="history-list">
+          <div class="history-item">
+            <div class="history-dot msg"></div>
+            <div class="history-content">
+              <div class="history-title">Perguntou sobre posto de saúde Santa Cruz</div>
+              <div class="history-time">Agora · IA respondendo</div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-dot event"></div>
+            <div class="history-content">
+              <div class="history-title">Compareceu ao evento em Betim</div>
+              <div class="history-time">18 Abr · presencial</div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-dot msg"></div>
+            <div class="history-content">
+              <div class="history-title">Enviou áudio de 40s com sugestões</div>
+              <div class="history-time">2 Abr · respondido</div>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="history-dot action"></div>
+            <div class="history-content">
+              <div class="history-title">Compartilhou 3 posts da Marina</div>
+              <div class="history-time">Mar · Instagram</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <div class="block-label">Conectado a</div>
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="k">emenda_local</span>
+            <span class="v sig">#3142 Santa Cruz</span>
+          </div>
+          <div class="info-row">
+            <span class="k">lista_transmissão</span>
+            <span class="v">Base Betim</span>
+          </div>
+          <div class="info-row">
+            <span class="k">CRM_interno</span>
+            <span class="v">Contato aberto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="compliance-mini">
+        <div class="compliance-mini-head">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Compliance</span>
+        </div>
+        <p>Respostas automatizadas identificadas. Log #LOG-C-8842 salvo. LGPD: consentimento aceito em 12/Jan/2025.</p>
+      </div>
+
+    </aside>
+
+  </div>
+
+</div>
+
+</body>
+</html>

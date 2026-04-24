@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Identidade Visual v0 — Plataforma de IA Política</title>
+
+<!-- Fontes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* PALETA PRIMÁRIA — "Linear com alma" */
+  --ink: #0A0A0B;           /* preto fosco, quase azulado */
+  --ink-soft: #121214;       /* card elevado */
+  --ink-softer: #1A1A1D;     /* card mais elevado */
+  --mist: #EDEDE9;           /* off-white cremoso, não branco frio */
+  --mist-soft: #D6D6D0;
+  --fog: #8A8A86;            /* neutro médio */
+  --fog-soft: #5A5A56;
+
+  /* COR-ASSINATURA — verde-lima elétrico calibrado */
+  --signal: #C5F24A;         /* acento principal */
+  --signal-dim: #97B938;     /* hover/escuro */
+  --signal-glow: rgba(197, 242, 74, 0.18);
+
+  /* CORES SEMÂNTICAS */
+  --positive: #6DD67D;       /* crescendo, apoiador */
+  --caution: #F4C544;        /* atenção, indeciso */
+  --negative: #F05D5E;       /* crítico, alerta */
+  --info: #7FA8E8;           /* informacional */
+
+  /* TIPOGRAFIA */
+  --font-display: 'Instrument Serif', 'Times New Roman', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--ink);
+  color: var(--mist);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+/* Noise overlay sutil */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 100;
+  mix-blend-mode: overlay;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+/* ===== HEADER / INTRO ===== */
+.intro {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-bottom: 1px solid rgba(237, 237, 233, 0.08);
+  padding-bottom: 80px;
+  margin-bottom: 80px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.label::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--signal);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+h1.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(56px, 8vw, 120px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--mist);
+  margin-bottom: 32px;
+}
+
+h1.display em {
+  font-style: italic;
+  color: var(--signal);
+}
+
+.intro p {
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--fog);
+  max-width: 720px;
+  margin-bottom: 16px;
+}
+
+.intro p strong {
+  color: var(--mist);
+  font-weight: 500;
+}
+
+/* ===== SECTION HEADERS ===== */
+section {
+  margin-bottom: 120px;
+}
+
+.section-header {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+  align-items: baseline;
+}
+
+.section-number {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--fog);
+  letter-spacing: 0.1em;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--mist);
+}
+
+.section-subtitle {
+  font-size: 16px;
+  color: var(--fog);
+  max-width: 640px;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+/* ===== PALETA DE CORES ===== */
+.palette-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+}
+
+.color-block {
+  padding: 32px;
+  border-radius: 12px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(237, 237, 233, 0.06);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.color-block:hover {
+  transform: translateY(-4px);
+  border-color: rgba(237, 237, 233, 0.15);
+}
+
+.color-block.large {
+  grid-row: span 2;
+  min-height: 416px;
+}
+
+.color-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.color-label {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+}
+
+.color-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.color-hex {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.color-role {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+/* Cor-blocks específicos */
+.c-ink { background: var(--ink); color: var(--mist); }
+.c-ink-soft { background: var(--ink-soft); color: var(--mist); }
+.c-mist { background: var(--mist); color: var(--ink); }
+.c-signal { background: var(--signal); color: var(--ink); }
+.c-fog { background: var(--fog); color: var(--ink); }
+.c-positive { background: var(--positive); color: var(--ink); }
+.c-caution { background: var(--caution); color: var(--ink); }
+.c-negative { background: var(--negative); color: var(--mist); }
+
+.c-signal .color-meta::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  background: var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+
+/* ===== TIPOGRAFIA ===== */
+.typography-showcase {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 64px;
+}
+
+.font-spec {
+  padding: 48px;
+  background: var(--ink-soft);
+  border: 1px solid rgba(237, 237, 233, 0.06);
+  border-radius: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.font-spec:hover {
+  border-color: rgba(197, 242, 74, 0.2);
+}
+
+.font-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  margin-bottom: 32px;
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(237, 237, 233, 0.08);
+}
+
+.font-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 8px;
+}
+
+.font-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--mist);
+  letter-spacing: -0.02em;
+}
+
+.font-license {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fog);
+  padding: 6px 12px;
+  border: 1px solid rgba(237, 237, 233, 0.15);
+  border-radius: 100px;
+}
+
+.font-sample-display {
+  font-family: var(--font-display);
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--mist);
+  margin-bottom: 16px;
+}
+
+.font-sample-display em {
+  font-style: italic;
+  color: var(--signal);
+}
+
+.font-sample-body {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--mist);
+  margin-bottom: 16px;
+  max-width: 640px;
+}
+
+.font-sample-body .variant {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.font-sample-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--fog);
+  padding: 16px;
+  background: var(--ink);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.font-sample-mono .highlight { color: var(--signal); }
+
+/* ===== LOGO DIRECTIONS ===== */
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.logo-card {
+  background: var(--ink-soft);
+  border: 1px solid rgba(237, 237, 233, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.logo-card:hover {
+  border-color: rgba(197, 242, 74, 0.25);
+  transform: translateY(-4px);
+}
+
+.logo-canvas {
+  aspect-ratio: 4 / 3;
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(237, 237, 233, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-canvas.inverted {
+  background: var(--mist);
+}
+
+.logo-canvas.signal {
+  background: var(--signal);
+}
+
+.logo-svg {
+  width: 60%;
+  height: auto;
+  max-height: 60%;
+}
+
+.logo-info {
+  padding: 28px;
+}
+
+.logo-direction {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 8px;
+}
+
+.logo-name {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--mist);
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.logo-desc {
+  font-size: 14px;
+  color: var(--fog);
+  line-height: 1.5;
+}
+
+/* ===== DASHBOARD PREVIEW ===== */
+.dashboard-preview {
+  background: var(--ink-soft);
+  border: 1px solid rgba(237, 237, 233, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: 16px;
+}
+
+.widget {
+  background: var(--ink-softer);
+  border: 1px solid rgba(237, 237, 233, 0.06);
+  border-radius: 14px;
+  padding: 24px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.widget-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 8px;
+}
+
+.widget-value {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--mist);
+}
+
+.widget-value .unit {
+  font-size: 20px;
+  color: var(--fog);
+  margin-left: 4px;
+}
+
+.widget-delta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.widget-delta.up { color: var(--positive); }
+.widget-delta.down { color: var(--negative); }
+
+.widget.hero {
+  grid-column: span 2;
+  grid-row: span 2;
+  background: var(--signal);
+  color: var(--ink);
+  padding: 32px;
+}
+
+.widget.hero .widget-label { color: var(--ink); opacity: 0.7; }
+.widget.hero .widget-value { color: var(--ink); font-size: 96px; }
+.widget.hero .hero-caption {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--ink);
+  margin-top: 16px;
+  max-width: 280px;
+  line-height: 1.3;
+}
+
+.widget.alert {
+  background: var(--ink-softer);
+  border-left: 3px solid var(--negative);
+}
+
+.widget.alert .widget-value {
+  color: var(--negative);
+  font-size: 28px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.widget-mini-chart {
+  height: 40px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-top: 12px;
+}
+
+.widget-mini-chart .bar {
+  flex: 1;
+  background: var(--signal);
+  border-radius: 2px;
+  opacity: 0.8;
+}
+
+.widget.chart-card {
+  grid-column: span 2;
+}
+
+.sentiment-bar {
+  display: flex;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.sentiment-bar .segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ===== APPLICATION EXAMPLES ===== */
+.applications {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.app-example {
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(237, 237, 233, 0.06);
+}
+
+/* Output: jornal diário (estilo editorial) */
+.app-jornal {
+  background: var(--signal);
+  color: var(--ink);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.app-jornal .date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.app-jornal .headline {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 24px 0;
+}
+
+.app-jornal .headline em {
+  font-style: italic;
+}
+
+.app-jornal .meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.app-jornal .excerpt {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.85;
+  max-width: 80%;
+}
+
+/* Output: card de prestação de contas */
+.app-card {
+  background: var(--ink);
+  color: var(--mist);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(237, 237, 233, 0.1);
+}
+
+.app-card .big-number {
+  font-family: var(--font-display);
+  font-size: 120px;
+  line-height: 0.9;
+  color: var(--signal);
+  letter-spacing: -0.04em;
+}
+
+.app-card .caption {
+  font-size: 16px;
+  color: var(--fog);
+  max-width: 70%;
+  margin-top: 16px;
+  line-height: 1.5;
+}
+
+.app-card .footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid rgba(237, 237, 233, 0.1);
+  padding-top: 24px;
+  margin-top: 24px;
+}
+
+.app-card .footer-brand {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--mist);
+}
+
+.app-card .footer-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  border-top: 1px solid rgba(237, 237, 233, 0.08);
+  padding-top: 48px;
+  margin-top: 80px;
+  text-align: center;
+}
+
+footer p {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fog);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+footer p em {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--signal);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .container { padding: 40px 20px; }
+  .palette-grid { grid-template-columns: 1fr 1fr; }
+  .color-block.large { grid-row: span 1; min-height: 200px; }
+  .logo-grid { grid-template-columns: 1fr; }
+  .dashboard-preview { grid-template-columns: repeat(2, 1fr); }
+  .widget.hero { grid-column: span 2; }
+  .widget.chart-card { grid-column: span 2; }
+  .applications { grid-template-columns: 1fr; }
+  .section-header { grid-template-columns: 1fr; gap: 16px; }
+  .section-title { font-size: 36px; }
+  h1.display { font-size: 56px; }
+  .app-card .big-number { font-size: 72px; }
+  .app-jornal .headline { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== INTRO ===== -->
+  <section class="intro">
+    <div class="label">Identidade visual — v0</div>
+    <h1 class="display">Linear <em>com alma.</em></h1>
+    <p><strong>Precisão técnica</strong> do produto-ferramenta sério.<br>
+    <strong>Generosidade visual</strong> do produto-gente bem-feito.</p>
+    <p style="margin-top: 24px; color: var(--fog-soft); font-size: 16px;">
+      Explore abaixo as decisões de paleta, tipografia, direções de logo e aplicações.<br>
+      Tudo pronto para ser discutido, ajustado e evoluído.
+    </p>
+  </section>
+
+  <!-- ===== PALETA ===== -->
+  <section>
+    <div class="section-header">
+      <div class="section-number">01 — Paleta</div>
+      <div>
+        <h2 class="section-title">Cor com função,<br>nunca decoração.</h2>
+        <p class="section-subtitle">
+          Base neutra profunda para não cansar em uso prolongado. Uma cor-assinatura
+          viva, sem conotação partidária. Três cores semânticas com papéis claros:
+          positivo, atenção, crítico. Nada de paleta multicolor que vira ruído.
+        </p>
+      </div>
+    </div>
+
+    <div class="palette-grid">
+      <div class="color-block c-ink large">
+        <div>
+          <div class="color-name">Primária · superfície</div>
+          <div class="color-label">Ink</div>
+        </div>
+        <div class="color-meta">
+          <span class="color-hex">#0A0A0B</span>
+          <span class="color-role">Fundo principal — telas operacionais</span>
+        </div>
+      </div>
+
+      <div class="color-block c-signal">
+        <div>
+          <div class="color-name">Cor-assinatura</div>
+          <div class="color-label">Signal</div>
+        </div>
+        <div class="color-meta">
+          <span class="color-hex">#C5F24A</span>
+          <span class="color-role">Acento único. A marca.</span>
+        </div>
+      </div>
+
+      <div class="color-block c-mist">
+        <div>
+          <div class="color-name">Neutro claro</div>
+          <div class="color-label">Mist</div>
+        </div>
+        <div class="color-meta">
+          <span class="color-hex">#EDEDE9</span>
+          <span class="color-role">Texto, fundo invertido</span>
+        </div>
+      </div>
+
+      <div class="color-block c-ink-soft">
+        <div>
+          <div class="color-name">Superfície elevada</div>
+          <div class="color-label">Ink Soft</div>
+        </div>
+        <div class="color-meta">
+          <span class="color-hex">#121214</span>
+          <span class="color-role">Cards, módulos, widgets</span>
+        </div>
+      </div>
+
+      <div class="color-block c-fog">
+        <div>
+          <div class="color-name">Neutro médio</div>
+          <div class="color-label">Fog</div>
+        </div>
+        <div class="color-meta">
+          <span class="color-hex">#8A8A86</span>
+          <span class="color-role">Texto secundário, labels</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semânticas -->
+    <div style="margin-top: 40px;">
+      <div class="color-name" style="color: var(--fog); margin-bottom: 16px;">Semânticas · significado fixo</div>
+      <div class="palette-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="color-block c-positive">
+          <div>
+            <div class="color-name">Positivo</div>
+            <div class="color-label">Cresce</div>
+          </div>
+          <div class="color-meta">
+            <span class="color-hex">#6DD67D</span>
+            <span class="color-role">Apoiador, métrica subindo</span>
+          </div>
+        </div>
+        <div class="color-block c-caution">
+          <div>
+            <div class="color-name">Atenção</div>
+            <div class="color-label">Alerta</div>
+          </div>
+          <div class="color-meta">
+            <span class="color-hex">#F4C544</span>
+            <span class="color-role">Indeciso, aviso, pendente</span>
+          </div>
+        </div>
+        <div class="color-block c-negative">
+          <div>
+            <div class="color-name">Crítico</div>
+            <div class="color-label">Urge</div>
+          </div>
+          <div class="color-meta">
+            <span class="color-hex">#F05D5E</span>
+            <span class="color-role">Crise, queda, ameaça</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TIPOGRAFIA ===== -->
+  <section>
+    <div class="section-header">
+      <div class="section-number">02 — Tipografia</div>
+      <div>
+        <h2 class="section-title">Três vozes,<br>uma só voz.</h2>
+        <p class="section-subtitle">
+          Uma serifa editorial para momentos de destaque — dá alma ao produto, faz
+          a marca respirar. Uma sans moderna para o trabalho diário. Uma mono técnica
+          para números, labels e logs. Todas com licença aberta.
+        </p>
+      </div>
+    </div>
+
+    <div class="typography-showcase">
+
+      <div class="font-spec">
+        <div class="font-header">
+          <div>
+            <div class="font-role">Display · momentos editoriais</div>
+            <div class="font-name">Instrument Serif</div>
+          </div>
+          <div class="font-license">Google Fonts · grátis</div>
+        </div>
+        <div class="font-sample-display">A política como <em>decisão.</em></div>
+        <p style="color: var(--fog); font-size: 14px; margin-top: 16px;">
+          Para títulos grandes, hero sections, outputs editoriais, relatórios, cards
+          de prestação de contas. É o que dá "alma" à marca — diferencia de
+          concorrentes que usam só sans frias.
+        </p>
+      </div>
+
+      <div class="font-spec">
+        <div class="font-header">
+          <div>
+            <div class="font-role">Body · trabalho diário</div>
+            <div class="font-name">Geist</div>
+          </div>
+          <div class="font-license">Vercel · grátis</div>
+        </div>
+        <div class="font-sample-body">
+          <span class="variant" style="font-weight: 300;">Light — Apoiadores detectados hoje</span>
+          <span class="variant" style="font-weight: 400;">Regular — O candidato visitou 3 cidades esta semana</span>
+          <span class="variant" style="font-weight: 500;">Medium — Score de reputação subiu 4 pontos</span>
+          <span class="variant" style="font-weight: 600;">Semibold — Alerta de crise em Contagem</span>
+          <span class="variant" style="font-weight: 700;">Bold — Emenda protocolada</span>
+        </div>
+        <p style="color: var(--fog); font-size: 14px; margin-top: 16px;">
+          Sans-serif moderna, criada pela Vercel. Mais personalidade que Inter,
+          mais sóbria que Söhne. Perfeita para interface operacional.
+        </p>
+      </div>
+
+      <div class="font-spec">
+        <div class="font-header">
+          <div>
+            <div class="font-role">Mono · dados, labels, logs</div>
+            <div class="font-name">Geist Mono</div>
+          </div>
+          <div class="font-license">Vercel · grátis</div>
+        </div>
+        <div class="font-sample-mono">
+<span class="highlight">[09:42]</span> score_reputacao: <span class="highlight">+4.2 pts</span><br>
+<span class="highlight">[09:43]</span> mencoes_24h: 1,247 (↑ 18%)<br>
+<span class="highlight">[09:44]</span> sentimento.apoiador: <span class="highlight">68%</span><br>
+<span class="highlight">[09:45]</span> alerta.detectado: <span style="color: var(--negative);">fake_news_propagacao</span>
+        </div>
+        <p style="color: var(--fog); font-size: 14px; margin-top: 16px;">
+          Para labels técnicas, timestamps, KPIs, logs de auditoria,
+          códigos de identificação. Reforça a sensação de "ferramenta profissional".
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LOGO DIRECTIONS ===== -->
+  <section>
+    <div class="section-header">
+      <div class="section-number">03 — Logo · 3 direções</div>
+      <div>
+        <h2 class="section-title">Três caminhos<br>conceituais.</h2>
+        <p class="section-subtitle">
+          Três direções diferentes, cada uma com uma lógica de marca por trás.
+          Não são opções estéticas — são apostas diferentes de como o produto
+          quer ser lembrado. Escolha conceitual, não visual.
+        </p>
+      </div>
+    </div>
+
+    <div class="logo-grid">
+
+      <!-- DIREÇÃO 1 — O Sinal -->
+      <div class="logo-card">
+        <div class="logo-canvas">
+          <svg class="logo-svg" viewBox="0 0 200 120" fill="none">
+            <!-- Sinal pulsante / onda -->
+            <circle cx="32" cy="60" r="6" fill="#C5F24A"/>
+            <circle cx="32" cy="60" r="14" stroke="#C5F24A" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="32" cy="60" r="22" stroke="#C5F24A" stroke-width="1" opacity="0.25"/>
+            <text x="62" y="72" font-family="Instrument Serif, serif" font-size="36" fill="#EDEDE9" font-style="italic">sinal</text>
+          </svg>
+        </div>
+        <div class="logo-info">
+          <div class="logo-direction">Direção 1</div>
+          <div class="logo-name">O Sinal</div>
+          <p class="logo-desc">
+            Um ponto pulsante com ondas concêntricas. A ideia: o produto
+            <em>detecta</em> o que está acontecendo antes dos outros. Sinal
+            de rádio, pulso, batimento. Nome em serifa itálica transmite fluidez.
+          </p>
+        </div>
+      </div>
+
+      <!-- DIREÇÃO 2 — O Quociente -->
+      <div class="logo-card">
+        <div class="logo-canvas inverted">
+          <svg class="logo-svg" viewBox="0 0 200 120" fill="none">
+            <!-- Símbolo abstrato de divisão / quociente -->
+            <line x1="24" y1="60" x2="56" y2="60" stroke="#0A0A0B" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="40" cy="44" r="5" fill="#0A0A0B"/>
+            <circle cx="40" cy="76" r="5" fill="#0A0A0B"/>
+            <text x="74" y="72" font-family="Geist, sans-serif" font-size="32" fill="#0A0A0B" font-weight="600" letter-spacing="-1">quociente</text>
+          </svg>
+        </div>
+        <div class="logo-info">
+          <div class="logo-direction">Direção 2</div>
+          <div class="logo-name">O Quociente</div>
+          <p class="logo-desc">
+            Símbolo matemático de divisão reinterpretado. Referência direta
+            ao quociente eleitoral — a matemática que decide quem se elege.
+            Tom técnico, confiante, quase acadêmico. Transmite "entendemos o jogo".
+          </p>
+        </div>
+      </div>
+
+      <!-- DIREÇÃO 3 — A Bússola -->
+      <div class="logo-card">
+        <div class="logo-canvas signal">
+          <svg class="logo-svg" viewBox="0 0 200 120" fill="none">
+            <!-- Bússola / ponteiro estratégico -->
+            <circle cx="40" cy="60" r="24" stroke="#0A0A0B" stroke-width="2" fill="none"/>
+            <path d="M 40 40 L 36 60 L 40 80 L 44 60 Z" fill="#0A0A0B"/>
+            <circle cx="40" cy="60" r="3" fill="#0A0A0B"/>
+            <text x="76" y="72" font-family="Instrument Serif, serif" font-size="34" fill="#0A0A0B">Norte</text>
+          </svg>
+        </div>
+        <div class="logo-info">
+          <div class="logo-direction">Direção 3</div>
+          <div class="logo-name">A Bússola / Norte</div>
+          <p class="logo-desc">
+            Uma bússola simplificada — direção, estratégia, lucidez em meio
+            ao ruído. Funciona como metáfora forte para produto que entrega
+            clareza de decisão. Tom mais humano, menos técnico. Nomeável ("Norte",
+            "Cardeal", "Rota").
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="color: var(--fog); font-size: 14px; margin-top: 32px; max-width: 720px; line-height: 1.6;">
+      <strong style="color: var(--mist);">Observação:</strong> essas são
+      ilustrações conceituais de baixa fidelidade feitas em SVG — servem para
+      você sentir a direção. O logo final precisa ser desenhado por designer
+      humano ou com ferramenta de IA generativa usando o brief conceitual.
+    </p>
+  </section>
+
+  <!-- ===== APLICAÇÃO — DASHBOARD ===== -->
+  <section>
+    <div class="section-header">
+      <div class="section-number">04 — Aplicação · dashboard</div>
+      <div>
+        <h2 class="section-title">A linguagem<br>em trabalho.</h2>
+        <p class="section-subtitle">
+          Exemplo de como paleta + tipografia + composição se comportam no dashboard
+          operacional. Bento grid, hierarquia clara, cor como semântica. Simples
+          de ler em 3 segundos.
+        </p>
+      </div>
+    </div>
+
+    <div class="dashboard-preview">
+
+      <div class="widget hero">
+        <div>
+          <div class="widget-label">Score de reputação · 7d</div>
+          <div class="widget-value">72<span class="unit">/100</span></div>
+        </div>
+        <div class="hero-caption">Subindo. <em>Momento de investir em alcance.</em></div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-label">Menções · 24h</div>
+        <div>
+          <div class="widget-value" style="font-size: 40px;">1.247</div>
+          <div class="widget-delta up">↑ 18% vs ontem</div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-label">Alcance · semana</div>
+        <div>
+          <div class="widget-value" style="font-size: 40px;">284K</div>
+          <div class="widget-delta up">↑ 34%</div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-label">Posts publicados</div>
+        <div>
+          <div class="widget-value" style="font-size: 40px;">23</div>
+          <div class="widget-mini-chart">
+            <div class="bar" style="height: 40%;"></div>
+            <div class="bar" style="height: 60%;"></div>
+            <div class="bar" style="height: 35%;"></div>
+            <div class="bar" style="height: 80%;"></div>
+            <div class="bar" style="height: 50%;"></div>
+            <div class="bar" style="height: 90%;"></div>
+            <div class="bar" style="height: 70%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget alert">
+        <div class="widget-label" style="color: var(--negative);">● Alerta ativo</div>
+        <div>
+          <div class="widget-value">Fake news detectada em Contagem</div>
+          <div class="widget-delta" style="color: var(--fog); margin-top: 12px;">há 8 min · 340 compartilhamentos</div>
+        </div>
+      </div>
+
+      <div class="widget chart-card">
+        <div class="widget-label">Termômetro de sentimento</div>
+        <div class="sentiment-bar">
+          <div class="segment" style="background: var(--positive); flex: 68;">68%</div>
+          <div class="segment" style="background: var(--caution); flex: 22;">22%</div>
+          <div class="segment" style="background: var(--negative); flex: 10;">10%</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--fog);">
+          <span>Apoiadores</span>
+          <span>Indecisos</span>
+          <span>Críticos</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== APLICAÇÃO — OUTPUTS ===== -->
+  <section>
+    <div class="section-header">
+      <div class="section-number">05 — Aplicação · outputs editoriais</div>
+      <div>
+        <h2 class="section-title">Quando a marca<br>vira peça.</h2>
+        <p class="section-subtitle">
+          Para relatórios, cards de WhatsApp, stories, prestação de contas
+          compartilhável. A linguagem muda — mesma marca, outro ritmo. Tipografia
+          monumental, respiração generosa, memorável no feed.
+        </p>
+      </div>
+    </div>
+
+    <div class="applications">
+
+      <div class="app-example app-jornal">
+        <div>
+          <div class="date">Terça · 21 Abril · 7h00</div>
+          <div class="headline">O dia em <em>três cenas.</em></div>
+          <p class="excerpt">
+            Pauta sobe no interior. Adversário em silêncio. Janela aberta
+            para posicionamento sobre saúde pública.
+          </p>
+        </div>
+        <div class="meta">Jornal diário · edição 142</div>
+      </div>
+
+      <div class="app-example app-card">
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-bottom: 32px;">Prestação de contas · 1º trimestre</div>
+          <div class="big-number">R$ 2,4M</div>
+          <p class="caption">em emendas apresentadas e acompanhadas, distribuídas entre 18 municípios da base.</p>
+        </div>
+        <div class="footer">
+          <div class="footer-brand">o trabalho, em números.</div>
+          <div class="footer-meta">Fonte: SIOP + +Brasil</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>Identidade visual v0 · <em>Linear com alma.</em></p>
+  </footer>
+
+</div>
+
+</body>
+</html>

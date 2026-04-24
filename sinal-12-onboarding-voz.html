@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Onboarding · Sua voz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; min-height: 100vh; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+/* ===== TOP BAR ===== */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 20px 40px;
+  background: rgba(10, 10, 11, 0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-logo { display: flex; align-items: center; gap: 10px; }
+.top-logo-mark { position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+.top-logo-dot { width: 7px; height: 7px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 10px var(--signal-glow); }
+.top-logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.top-logo-ring.r1 { width: 14px; height: 14px; opacity: 0.6; }
+.top-logo-ring.r2 { width: 20px; height: 20px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.top-logo-text { font-family: var(--font-display); font-size: 18px; letter-spacing: -0.02em; color: var(--mist); }
+.top-logo-text em { font-style: italic; color: var(--signal); }
+
+/* Progress */
+.progress-bar { display: flex; align-items: center; gap: 6px; }
+.progress-step {
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-softer);
+  transition: all 0.3s ease;
+  position: relative;
+}
+.progress-step.done { background: var(--signal); }
+.progress-step.current { background: var(--signal); box-shadow: 0 0 10px var(--signal-glow); }
+.progress-step.current::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--signal);
+  border-radius: 2px;
+  animation: shimmer 2s infinite ease-in-out;
+}
+@keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.top-right { display: flex; align-items: center; gap: 14px; }
+
+.progress-label { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.08em; text-transform: uppercase; }
+.progress-label strong { color: var(--signal); font-weight: 500; }
+
+.save-exit {
+  font-family: var(--font-body);
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--mist-dim);
+  cursor: pointer;
+}
+.save-exit:hover { border-color: var(--border-hover); color: var(--mist); }
+
+/* ===== MAIN CANVAS ===== */
+.canvas {
+  padding: 120px 40px 160px;
+  max-width: 1100px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ===== HERO ===== */
+.hero { margin-bottom: 48px; }
+
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-kicker::before { content: ''; width: 24px; height: 1px; background: var(--signal); }
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 80px;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--mist);
+  margin-bottom: 24px;
+}
+.hero-title em { font-style: italic; color: var(--signal); }
+
+.hero-desc {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--mist-dim);
+  max-width: 720px;
+  font-style: italic;
+}
+
+/* ===== VOICE CALIBRATION BAR ===== */
+.calibration-card {
+  background: linear-gradient(135deg, var(--ink-soft) 0%, var(--ink-softer) 100%);
+  border: 1px solid var(--signal);
+  border-radius: 18px;
+  padding: 32px 36px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.calibration-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--signal-glow) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.calib-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.calib-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.calib-label .live { width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--signal); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.calib-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--mist);
+}
+.calib-title em { font-style: italic; color: var(--signal); }
+
+.calib-percent {
+  font-family: var(--font-display);
+  font-size: 72px;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--signal);
+  text-align: right;
+}
+.calib-percent em { font-style: italic; font-size: 36px; color: var(--mist-dim); }
+
+.calib-bar-wrap {
+  height: 12px;
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 16px;
+}
+.calib-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--signal-dim) 0%, var(--signal) 100%);
+  border-radius: 8px;
+  box-shadow: 0 0 15px var(--signal-glow);
+  position: relative;
+  width: 64%;
+}
+.calib-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3));
+}
+
+.calib-stages {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fog);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0 4px;
+  position: relative;
+  z-index: 1;
+}
+.calib-stage.active { color: var(--signal); font-weight: 600; }
+.calib-stage.done { color: var(--mist-dim); }
+
+/* ===== INPUT METHODS GRID ===== */
+.methods-intro {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.methods-intro::before { content: ''; width: 20px; height: 1px; background: var(--fog-soft); }
+
+.methods-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.method-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.method-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+.method-card.complete { border-color: var(--positive); border-left: 3px solid var(--positive); padding-left: 22px; }
+.method-card.active { border-color: var(--signal); border-left: 3px solid var(--signal); padding-left: 22px; }
+
+.method-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.method-num {
+  font-family: var(--font-display);
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--mist);
+  opacity: 0.12;
+  font-style: italic;
+}
+
+.method-status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.method-status.done { background: rgba(109, 214, 125, 0.15); color: var(--positive); }
+.method-status.pending { background: var(--ink-softer); color: var(--fog); }
+.method-status.current { background: var(--signal-glow); color: var(--signal); }
+
+.method-title { font-family: var(--font-display); font-size: 22px; line-height: 1.15; letter-spacing: -0.02em; color: var(--mist); margin-bottom: 8px; }
+.method-title em { font-style: italic; color: var(--signal); }
+
+.method-desc { font-size: 13px; color: var(--mist-dim); line-height: 1.5; margin-bottom: 18px; flex: 1; }
+
+.method-stats {
+  display: flex;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+}
+.method-stats strong { color: var(--mist); font-weight: 500; }
+.method-stats .plus { color: var(--signal); }
+
+/* ===== METHOD 1 WORK AREA — PASTE POSTS ===== */
+.work-section { margin-bottom: 40px; }
+
+.work-header { margin-bottom: 20px; }
+.work-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.work-title { font-family: var(--font-display); font-size: 36px; line-height: 1.05; letter-spacing: -0.02em; color: var(--mist); margin-bottom: 10px; }
+.work-title em { font-style: italic; color: var(--signal); }
+
+.work-desc { font-size: 15px; color: var(--mist-dim); line-height: 1.55; max-width: 640px; }
+
+.posts-container { display: flex; flex-direction: column; gap: 12px; }
+
+.post-slot {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.post-slot:focus-within { border-color: var(--signal); background: var(--ink-softer); }
+.post-slot.filled { border-left: 3px solid var(--positive); padding-left: 19px; }
+
+.post-slot-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.post-slot-label { display: flex; align-items: center; gap: 10px; }
+.post-slot-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mist);
+  font-weight: 600;
+}
+.post-slot.filled .post-slot-num { background: var(--positive); color: var(--ink); border-color: var(--positive); }
+
+.post-slot-name { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; }
+.post-slot-name strong { color: var(--mist); }
+
+.post-slot-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; }
+.post-slot-meta.good { color: var(--positive); }
+
+.post-textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--mist);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  min-height: 60px;
+}
+.post-textarea::placeholder { color: var(--fog-soft); font-style: italic; }
+
+.post-slot-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.slot-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--fog);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+.slot-tag:hover { color: var(--mist); border-color: var(--border-hover); }
+.slot-tag.selected { background: var(--signal-glow); color: var(--signal); border-color: var(--signal); }
+
+.add-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed var(--border-hover);
+  border-radius: 12px;
+  color: var(--fog);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+}
+.add-slot:hover { border-color: var(--signal); color: var(--signal); background: var(--signal-glow); }
+.add-slot svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ===== BOTTOM ACTIONS ===== */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 11, 0.96);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 40;
+}
+
+.bottom-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bottom-hint { font-size: 13px; color: var(--mist-dim); }
+.bottom-hint strong { color: var(--signal); }
+
+.bottom-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--ink-soft);
+  color: var(--mist);
+  transition: all 0.15s ease;
+}
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn.ghost { background: transparent; }
+.btn.primary {
+  background: var(--signal);
+  color: var(--ink);
+  border-color: var(--signal);
+  font-weight: 600;
+  padding: 11px 24px;
+}
+.btn.primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* AI Assist banner */
+.ai-tip {
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--signal);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.ai-tip-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--signal-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-tip-icon svg { width: 14px; height: 14px; stroke: var(--signal); fill: none; stroke-width: 2; }
+.ai-tip-text { font-size: 13px; color: var(--mist-dim); line-height: 1.5; }
+.ai-tip-text strong { color: var(--mist); font-weight: 500; }
+.ai-tip-text em { color: var(--signal); font-style: italic; }
+
+@media (max-width: 900px) {
+  .canvas { padding: 100px 20px 140px; }
+  .hero-title { font-size: 56px; }
+  .hero-desc { font-size: 18px; }
+  .calibration-card { padding: 24px; }
+  .calib-head { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .calib-percent { font-size: 56px; text-align: left; }
+  .methods-grid { grid-template-columns: 1fr; }
+  .top-bar { padding: 14px 20px; }
+  .bottom-bar { padding: 14px 20px; flex-direction: column; gap: 10px; align-items: stretch; }
+  .bottom-actions { justify-content: space-between; }
+  .progress-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="top-bar">
+  <a href="index.html" class="top-logo" style="text-decoration: none; color: inherit;">
+    <div class="top-logo-mark">
+      <div class="top-logo-ring r1"></div>
+      <div class="top-logo-ring r2"></div>
+      <div class="top-logo-dot"></div>
+    </div>
+    <div class="top-logo-text">sinal<em>.ai</em></div>
+  </a>
+
+  <div class="progress-bar">
+    <div class="progress-step done"></div>
+    <div class="progress-step done"></div>
+    <div class="progress-step current"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+    <div class="progress-step"></div>
+  </div>
+
+  <div class="top-right">
+    <div class="progress-label">Passo <strong>3 de 6</strong> · Sua voz</div>
+    <button class="save-exit">Salvar e sair</button>
+  </div>
+</div>
+
+<!-- ===== MAIN CANVAS ===== -->
+<main class="canvas">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-kicker">Passo 3 · Fine-tuning</div>
+    <h1 class="hero-title">Me conta <em>como você fala.</em></h1>
+    <p class="hero-desc">
+      Nos próximos 15 minutos, vamos treinar uma IA que escreve do seu jeito.
+      Não genérica. Não robótica. Sua.
+    </p>
+  </div>
+
+  <!-- CALIBRATION BAR -->
+  <div class="calibration-card">
+    <div class="calib-head">
+      <div>
+        <div class="calib-label">
+          <span class="live"></span>
+          Calibração da voz · em andamento
+        </div>
+        <div class="calib-title">Marina, estou <em>quase te entendendo.</em></div>
+      </div>
+      <div class="calib-percent">64<em>%</em></div>
+    </div>
+
+    <div class="calib-bar-wrap">
+      <div class="calib-bar-fill"></div>
+    </div>
+
+    <div class="calib-stages">
+      <div class="calib-stage done">0% · inicial</div>
+      <div class="calib-stage done">30% · básica</div>
+      <div class="calib-stage active">60% · boa</div>
+      <div class="calib-stage">80% · refinada</div>
+      <div class="calib-stage">95% · sua</div>
+    </div>
+  </div>
+
+  <!-- AI TIP -->
+  <div class="ai-tip">
+    <div class="ai-tip-icon">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    </div>
+    <div class="ai-tip-text">
+      <strong>Dica:</strong> você não precisa completar tudo agora. <em>Cada caminho que você preenche melhora a voz.</em> A calibração já está em nível bom (64%) — dá pra começar a usar. Mas quanto mais alimentar, mais precisa fica.
+    </div>
+  </div>
+
+  <!-- METHODS GRID -->
+  <div class="methods-intro">Três caminhos para eu te conhecer</div>
+
+  <div class="methods-grid">
+
+    <div class="method-card complete">
+      <div class="method-header">
+        <div class="method-num">01</div>
+        <div class="method-status done">Concluído</div>
+      </div>
+      <h3 class="method-title">Cole posts <em>seus favoritos</em></h3>
+      <p class="method-desc">Posts que você escreveu e acha que representam bem sua voz. Quanto mais recentes, melhor.</p>
+      <div class="method-stats">
+        <span><strong>5</strong> de 5 posts</span>
+        <span>·</span>
+        <span class="plus">+30% calibração</span>
+      </div>
+    </div>
+
+    <div class="method-card active">
+      <div class="method-header">
+        <div class="method-num">02</div>
+        <div class="method-status current">Fazendo agora</div>
+      </div>
+      <h3 class="method-title">Envie peças <em>antigas</em></h3>
+      <p class="method-desc">PDFs de discursos, áudios de entrevistas, screenshots de posts, vídeos. Eu transcrevo e aprendo.</p>
+      <div class="method-stats">
+        <span><strong>2</strong> de 10 arquivos</span>
+        <span>·</span>
+        <span class="plus">+18% parcial</span>
+      </div>
+    </div>
+
+    <div class="method-card">
+      <div class="method-header">
+        <div class="method-num">03</div>
+        <div class="method-status pending">A fazer</div>
+      </div>
+      <h3 class="method-title">Responda <em>5 perguntas</em></h3>
+      <p class="method-desc">Pergunto algumas coisas abertas sobre você, sua história, seu jeito de ver política. Em texto ou áudio.</p>
+      <div class="method-stats">
+        <span><strong>0</strong> de 5 respostas</span>
+        <span>·</span>
+        <span style="color: var(--fog-soft);">até +15%</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WORK AREA - Método 1 aberto (com conteúdo) -->
+  <div class="work-section">
+
+    <div class="work-header">
+      <div class="work-kicker">Método 01 · Concluído · editável</div>
+      <h2 class="work-title">5 posts que <em>soam como você.</em></h2>
+      <p class="work-desc">
+        Esses textos viraram referência para toda resposta, legenda e mensagem que a IA
+        for gerar no seu nome. Você pode voltar aqui a qualquer momento e atualizar.
+      </p>
+    </div>
+
+    <div class="posts-container">
+
+      <!-- POST 1 -->
+      <div class="post-slot filled">
+        <div class="post-slot-head">
+          <div class="post-slot-label">
+            <div class="post-slot-num">1</div>
+            <div class="post-slot-name">Post · <strong>Instagram</strong> · Março/2026</div>
+          </div>
+          <div class="post-slot-meta good">✓ 58 palavras · tom direto</div>
+        </div>
+        <div class="post-textarea" style="min-height: unset; cursor: text;" contenteditable="true">Hoje na audiência pública sobre o SUS em Minas, ouvi uma mãe dizer que sua filha esperou 11 meses por uma consulta de cardiologia. Onze meses. Isso não é demora — é abandono. Enquanto alguns tratam saúde como pauta de campanha, eu trato como prioridade de mandato. Segue a cobrança.</div>
+        <div class="post-slot-actions">
+          <span class="slot-tag selected">Direto</span>
+          <span class="slot-tag selected">Indignação contida</span>
+          <span class="slot-tag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- POST 2 -->
+      <div class="post-slot filled">
+        <div class="post-slot-head">
+          <div class="post-slot-label">
+            <div class="post-slot-num">2</div>
+            <div class="post-slot-name">Post · <strong>Instagram</strong> · Fevereiro/2026</div>
+          </div>
+          <div class="post-slot-meta good">✓ 42 palavras · tom narrativo</div>
+        </div>
+        <div class="post-textarea" style="min-height: unset; cursor: text;" contenteditable="true">Café numa padaria em Sete Lagoas, 7 da manhã. A senhora ao lado me reconhece e pergunta se vou continuar lutando pelo transporte intermunicipal. "Enquanto tiver fôlego, dona Antônia". A política acontece aqui. Não em palanque.</div>
+        <div class="post-slot-actions">
+          <span class="slot-tag selected">Narrativo</span>
+          <span class="slot-tag selected">Humano</span>
+          <span class="slot-tag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- POST 3 -->
+      <div class="post-slot filled">
+        <div class="post-slot-head">
+          <div class="post-slot-label">
+            <div class="post-slot-num">3</div>
+            <div class="post-slot-name">Post · <strong>Twitter</strong> · Fevereiro/2026</div>
+          </div>
+          <div class="post-slot-meta good">✓ 28 palavras · tom combativo</div>
+        </div>
+        <div class="post-textarea" style="min-height: unset; cursor: text;" contenteditable="true">Chegou a emenda, saiu do papel, virou sala cirúrgica. O que a gente promete, a gente cumpre. Próximo item da lista: centro de saúde em Ribeirão. Quem está comigo?</div>
+        <div class="post-slot-actions">
+          <span class="slot-tag selected">Combativo</span>
+          <span class="slot-tag selected">Convite</span>
+          <span class="slot-tag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- POST 4 -->
+      <div class="post-slot filled">
+        <div class="post-slot-head">
+          <div class="post-slot-label">
+            <div class="post-slot-num">4</div>
+            <div class="post-slot-name">Post · <strong>LinkedIn</strong> · Janeiro/2026</div>
+          </div>
+          <div class="post-slot-meta good">✓ 164 palavras · tom reflexivo</div>
+        </div>
+        <div class="post-textarea" style="min-height: unset; cursor: text;" contenteditable="true">Completo três anos de mandato essa semana. Faço essa pausa para olhar pra trás e, principalmente, pra frente. O que aprendi? Que política séria é feita de três coisas: presença (estar onde ninguém está olhando), método (dado antes de discurso) e paciência (mudança estrutural leva tempo). Tem gente que quer resultado de eleição em resultado de mandato. Não funciona assim. Mandato é para fazer acontecer o que campanha promete. Ainda tenho muito a entregar. Mas saio daqui com a convicção de que escolhi o caminho certo: servir.</div>
+        <div class="post-slot-actions">
+          <span class="slot-tag selected">Reflexivo</span>
+          <span class="slot-tag selected">Método</span>
+          <span class="slot-tag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- POST 5 -->
+      <div class="post-slot filled">
+        <div class="post-slot-head">
+          <div class="post-slot-label">
+            <div class="post-slot-num">5</div>
+            <div class="post-slot-name">Post · <strong>WhatsApp</strong> (lista) · Janeiro/2026</div>
+          </div>
+          <div class="post-slot-meta good">✓ 38 palavras · tom próximo</div>
+        </div>
+        <div class="post-textarea" style="min-height: unset; cursor: text;" contenteditable="true">Oi! Aqui é a Marina, em pessoa. Queria dizer obrigada por acompanhar meu trabalho esse ano. Sei que às vezes dá desânimo. Mas tem muita coisa acontecendo por baixo do barulho. Conto com você. 🙏</div>
+        <div class="post-slot-actions">
+          <span class="slot-tag selected">Próximo</span>
+          <span class="slot-tag selected">Afetivo</span>
+          <span class="slot-tag">+ tag</span>
+        </div>
+      </div>
+
+      <!-- ADD SLOT -->
+      <div class="add-slot">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar mais um post
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== BOTTOM BAR ===== -->
+<div class="bottom-bar">
+  <div class="bottom-info">
+    <div class="bottom-hint">
+      Voz calibrada em <strong>64%</strong> · boa o suficiente pra começar a usar
+    </div>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="btn ghost">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Voltar
+    </button>
+    <button class="btn">Pular por agora</button>
+    <button class="btn primary">
+      Próximo passo
+      <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+</div>
+
+</body>
+</html>

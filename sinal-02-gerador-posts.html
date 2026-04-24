@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Conteúdo · Gerador de Posts</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ===== SIDEBAR ===== */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; transition: all 0.15s ease; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); cursor: pointer; transition: background 0.15s ease; }
+.candidate-badge:hover { background: var(--ink-softer); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; flex-shrink: 0; }
+.candidate-info { flex: 1; min-width: 0; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+.candidate-chevron { color: var(--fog); width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+/* ===== MAIN ===== */
+.main { padding: 28px 40px 48px; max-width: 1400px; width: 100%; }
+
+/* Breadcrumb */
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
+.breadcrumb .current { color: var(--signal); }
+.breadcrumb-sep { color: var(--fog-softer); }
+
+.main-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.header-title { font-family: var(--font-display); font-size: 44px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.header-title em { font-style: italic; color: var(--signal); }
+.header-subtitle { font-size: 14px; color: var(--fog); margin-top: 10px; max-width: 560px; line-height: 1.5; }
+
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); }
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
+.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ===== FILTERS BAR ===== */
+.filters-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 12px 16px; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; }
+.filters-left { display: flex; gap: 6px; align-items: center; }
+.filter-chip { font-family: var(--font-body); font-size: 12px; font-weight: 500; padding: 7px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; border: 1px solid transparent; color: var(--fog); background: transparent; }
+.filter-chip:hover { color: var(--mist); }
+.filter-chip.active { background: var(--ink); color: var(--mist); border-color: var(--border-hover); }
+.filter-chip .count { font-family: var(--font-mono); color: var(--fog-soft); margin-left: 6px; font-size: 11px; }
+.filter-chip.active .count { color: var(--signal); }
+
+.filters-right { display: flex; gap: 8px; align-items: center; }
+.search-input { background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px 7px 32px; font-family: var(--font-body); font-size: 12px; color: var(--mist); width: 200px; position: relative; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A8A86' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 10px center; }
+.search-input::placeholder { color: var(--fog-soft); }
+.search-input:focus { outline: none; border-color: var(--signal); }
+
+.view-toggle { display: flex; background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.view-btn { padding: 5px 10px; border-radius: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--fog); cursor: pointer; background: transparent; border: none; letter-spacing: 0.08em; text-transform: uppercase; }
+.view-btn.active { background: var(--ink-softer); color: var(--mist); }
+
+/* ===== KPI STRIP ===== */
+.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+.kpi-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 10px; }
+.kpi-value { font-family: var(--font-display); font-size: 40px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.kpi-delta { font-family: var(--font-mono); font-size: 11px; margin-top: 6px; color: var(--positive); }
+
+/* ===== CONTENT LAYOUT ===== */
+.content-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+
+/* ===== POSTS LIST ===== */
+.posts-section { display: flex; flex-direction: column; gap: 12px; }
+
+.section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.section-heading h2 { font-family: var(--font-display); font-size: 24px; letter-spacing: -0.02em; color: var(--mist); font-weight: 400; }
+.section-heading h2 em { font-style: italic; color: var(--signal); }
+.section-heading .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.source-group { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s ease; }
+.source-group:hover { border-color: var(--border-hover); }
+
+.source-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.source-header-left { display: flex; align-items: center; gap: 14px; }
+.source-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--ink); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); flex-shrink: 0; }
+.source-icon svg { width: 16px; height: 16px; stroke: var(--signal); fill: none; stroke-width: 1.5; }
+.source-info { display: flex; flex-direction: column; }
+.source-title { font-size: 14px; color: var(--mist); font-weight: 500; margin-bottom: 2px; }
+.source-title strong { color: var(--signal); font-weight: 500; }
+.source-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; }
+.source-header-right { display: flex; gap: 8px; align-items: center; }
+.source-count { font-family: var(--font-mono); font-size: 11px; color: var(--fog); padding: 4px 10px; background: var(--ink); border-radius: 100px; }
+
+.posts-grid { padding: 16px 20px 20px 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+.post-card { background: var(--ink-softer); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.15s ease; display: flex; flex-direction: column; gap: 12px; position: relative; }
+.post-card:hover { border-color: var(--signal); background: var(--ink-hover); transform: translateY(-1px); }
+
+.post-card-head { display: flex; justify-content: space-between; align-items: center; }
+.channel-chip { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--signal); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+.channel-chip svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.waiting { background: var(--caution); }
+.status-dot.approved { background: var(--positive); }
+.status-dot.draft { background: var(--fog); }
+
+.post-preview { font-size: 13px; color: var(--mist); line-height: 1.45; min-height: 60px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.post-preview strong { color: var(--signal); font-weight: 500; }
+
+.post-card-visual { background: var(--ink); border-radius: 6px; height: 110px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.post-card-visual.gradient-1 { background: linear-gradient(135deg, var(--signal) 0%, var(--signal-dim) 100%); }
+.post-card-visual.gradient-2 { background: linear-gradient(135deg, var(--ink-softer) 0%, var(--ink-soft) 100%); border: 1px solid var(--border); }
+.post-card-visual.video::after { content: '▶'; position: absolute; color: var(--mist); font-size: 32px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+
+.post-card-visual .visual-number { font-family: var(--font-display); font-size: 48px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); }
+.post-card-visual .visual-label { position: absolute; bottom: 8px; left: 10px; font-family: var(--font-mono); font-size: 9px; color: var(--ink); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.post-card-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+.post-card-foot-left { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--fog); }
+.post-card-foot-left span { display: flex; align-items: center; gap: 4px; }
+.post-card-foot .cta { font-family: var(--font-body); font-size: 11px; color: var(--mist); font-weight: 500; display: flex; align-items: center; gap: 4px; }
+
+/* ===== SIDEBAR RIGHT: ACTIVITY ===== */
+.right-rail { display: flex; flex-direction: column; gap: 16px; }
+
+.rail-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
+
+.rail-card-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+/* Today's Sources */
+.sources-list { display: flex; flex-direction: column; gap: 10px; }
+.source-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--border); }
+.source-item:first-child { border-top: none; padding-top: 0; }
+.source-item-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.source-item-dot.emenda { background: var(--signal); }
+.source-item-dot.visita { background: var(--info); }
+.source-item-dot.efemeride { background: var(--caution); }
+.source-item-dot.provasocial { background: var(--positive); }
+.source-item-content { flex: 1; }
+.source-item-title { font-size: 13px; color: var(--mist); font-weight: 500; line-height: 1.3; margin-bottom: 2px; }
+.source-item-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.03em; }
+
+/* Voice Training */
+.voice-card { background: var(--ink); border: 1px solid var(--signal); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; }
+.voice-card::before { content: ''; position: absolute; top: -30%; right: -30%; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, var(--signal-glow) 0%, transparent 70%); pointer-events: none; }
+.voice-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.voice-label .live-dot { width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--signal); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.voice-title { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); line-height: 1.2; margin-bottom: 10px; position: relative; z-index: 1; }
+.voice-title em { font-style: italic; color: var(--signal); }
+.voice-desc { font-size: 12px; color: var(--mist-dim); line-height: 1.5; margin-bottom: 14px; position: relative; z-index: 1; }
+.voice-metrics { display: flex; gap: 12px; margin-bottom: 12px; position: relative; z-index: 1; }
+.voice-metric { flex: 1; }
+.voice-metric-val { font-family: var(--font-display); font-size: 24px; color: var(--signal); line-height: 1; letter-spacing: -0.02em; }
+.voice-metric-label { font-family: var(--font-mono); font-size: 9px; color: var(--fog); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.08em; }
+
+/* Coherence */
+.coherence-card { }
+.coherence-bar-wrap { margin-top: 8px; }
+.coherence-label-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; margin-bottom: 6px; }
+.coherence-label-row .val { color: var(--positive); font-weight: 600; }
+.coherence-bar { height: 6px; background: var(--ink); border-radius: 3px; overflow: hidden; }
+.coherence-fill { height: 100%; background: linear-gradient(90deg, var(--signal-dim), var(--positive)); border-radius: 3px; }
+.coherence-note { font-size: 11px; color: var(--fog); line-height: 1.4; margin-top: 10px; }
+
+/* Compliance Status */
+.compliance-row { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; padding: 10px 0; border-top: 1px solid var(--border); }
+.compliance-row:first-of-type { border-top: none; }
+.compliance-row .k { color: var(--fog); }
+.compliance-row .v { color: var(--mist); display: flex; align-items: center; gap: 6px; }
+.compliance-row .v svg { width: 12px; height: 12px; stroke: var(--positive); fill: none; stroke-width: 2; }
+
+@media (max-width: 1200px) {
+  .content-layout { grid-template-columns: 1fr; }
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .posts-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 24px 16px; }
+  .posts-grid { grid-template-columns: 1fr; }
+  .kpi-strip { grid-template-columns: 1fr 1fr; }
+  .filters-bar { flex-direction: column; gap: 10px; align-items: stretch; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Governança</div>
+      <a href="sinal-11-compliance.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
+      <a href="sinal-13-configuracoes.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div class="candidate-info">
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+        <svg class="candidate-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span>Sinal</span><span class="breadcrumb-sep">/</span>
+      <span>Conteúdo</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Gerador de Posts</span>
+    </div>
+
+    <div class="main-header">
+      <div>
+        <h1 class="header-title">O que foi feito<br><em>já virou post.</em></h1>
+        <p class="header-subtitle">
+          23 sugestões geradas automaticamente a partir da sua agenda, emendas e pautas de hoje.
+          Aprove, edite ou gere variações. Todo conteúdo passa pela sua voz.
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendário</button>
+        <button class="btn-primary btn"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo post</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-label">Aguardando aprovação</div>
+        <div class="kpi-value">14</div>
+        <div class="kpi-delta" style="color: var(--caution);">Hoje até 18h</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Aprovados · prontos</div>
+        <div class="kpi-value">9</div>
+        <div class="kpi-delta">+3 vs ontem</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Publicados · 7 dias</div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-delta">Engaj. médio: 8.2%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Taxa de aprovação s/ edição</div>
+        <div class="kpi-value">68%</div>
+        <div class="kpi-delta">Voz bem calibrada</div>
+      </div>
+    </div>
+
+    <!-- Filters bar -->
+    <div class="filters-bar">
+      <div class="filters-left">
+        <button class="filter-chip active">Todos <span class="count">23</span></button>
+        <button class="filter-chip">Aguardando <span class="count">14</span></button>
+        <button class="filter-chip">Aprovados <span class="count">9</span></button>
+        <button class="filter-chip">Instagram <span class="count">11</span></button>
+        <button class="filter-chip">TikTok <span class="count">4</span></button>
+        <button class="filter-chip">WhatsApp <span class="count">5</span></button>
+        <button class="filter-chip">X <span class="count">3</span></button>
+      </div>
+      <div class="filters-right">
+        <input class="search-input" placeholder="Buscar por tema ou fonte…" />
+        <div class="view-toggle">
+          <button class="view-btn active">Grid</button>
+          <button class="view-btn">Lista</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Layout -->
+    <div class="content-layout">
+
+      <!-- Posts Section -->
+      <div class="posts-section">
+
+        <div class="section-heading">
+          <h2>Hoje · <em>agrupados por fonte</em></h2>
+          <span class="meta">Atualizado há 3 min</span>
+        </div>
+
+        <!-- GROUP 1: Emenda -->
+        <div class="source-group">
+          <div class="source-header">
+            <div class="source-header-left">
+              <div class="source-icon">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div class="source-info">
+                <div class="source-title"><strong>Fonte:</strong> Emenda #2847 · Hospital de Betim · R$ 1.2M</div>
+                <div class="source-meta">Protocolada em 2024 · Executada em abril/26 · Visita hoje 14h</div>
+              </div>
+            </div>
+            <div class="source-header-right">
+              <div class="source-count">4 sugestões</div>
+            </div>
+          </div>
+
+          <div class="posts-grid">
+
+            <!-- Post 1 -->
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                  Instagram · Feed
+                </div>
+                <div class="status-dot waiting" title="Aguardando aprovação"></div>
+              </div>
+              <div class="post-card-visual gradient-1">
+                <div class="visual-number">R$1,2M</div>
+                <div class="visual-label">Hospital de Betim</div>
+              </div>
+              <p class="post-preview"><strong>Hospital de Betim.</strong> Acompanhei a execução da emenda de R$ 1.2M que apresentei em 2024. Saúde se faz com presença, não com promessa.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>📷 1 foto</span>
+                  <span>📝 42 palavras</span>
+                </div>
+                <span class="cta">Revisar →</span>
+              </div>
+            </div>
+
+            <!-- Post 2 -->
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  Reels · 18s
+                </div>
+                <div class="status-dot waiting"></div>
+              </div>
+              <div class="post-card-visual gradient-2 video"></div>
+              <p class="post-preview">Roteiro: <strong>Gancho</strong> — "R$ 1.2M saiu do papel hoje." <strong>Corpo</strong> — 3 cortes do hospital. <strong>Fechamento</strong> — "Isso é trabalho."</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>🎵 Trilha sugerida</span>
+                  <span>✂ 3 cortes</span>
+                </div>
+                <span class="cta">Revisar →</span>
+              </div>
+            </div>
+
+            <!-- Post 3 -->
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  WhatsApp · Lista base
+                </div>
+                <div class="status-dot approved"></div>
+              </div>
+              <div class="post-card-visual gradient-1">
+                <div class="visual-number">✓</div>
+                <div class="visual-label">Prova social · card</div>
+              </div>
+              <p class="post-preview">Card visual com <strong>R$ 1.2M aplicados</strong> + foto da visita. Mensagem: "O que a gente promete, a gente cumpre."</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>👥 3.247 contatos</span>
+                  <span>✓ Aprovado</span>
+                </div>
+                <span class="cta">Agendar →</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- GROUP 2: Agenda Hoje -->
+        <div class="source-group">
+          <div class="source-header">
+            <div class="source-header-left">
+              <div class="source-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <div class="source-info">
+                <div class="source-title"><strong>Fonte:</strong> Agenda · Café com lideranças · Região Leste · 09h42</div>
+                <div class="source-meta">3 fotos enviadas pela equipe · descrição preenchida</div>
+              </div>
+            </div>
+            <div class="source-header-right">
+              <div class="source-count">3 sugestões</div>
+            </div>
+          </div>
+
+          <div class="posts-grid">
+
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
+                  Instagram · Stories
+                </div>
+                <div class="status-dot waiting"></div>
+              </div>
+              <div class="post-card-visual gradient-2">
+                <div class="visual-number" style="color: var(--mist); font-size: 28px;">3 stories</div>
+                <div class="visual-label" style="color: var(--fog);">Sequencial · narrativa</div>
+              </div>
+              <p class="post-preview">Story 1: chegada no centro comunitário. Story 2: escuta ativa com lideranças. Story 3: promessa específica de retorno com plano.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>⏱ 15s cada</span>
+                  <span>📸 3 fotos</span>
+                </div>
+                <span class="cta">Revisar →</span>
+              </div>
+            </div>
+
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
+                  Instagram · Feed
+                </div>
+                <div class="status-dot waiting"></div>
+              </div>
+              <div class="post-card-visual gradient-2"></div>
+              <p class="post-preview">Foto em grupo + legenda sobre o que foi ouvido. <strong>Tema dominante:</strong> transporte público na região. Propor pauta na ALMG.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>📷 1 foto</span>
+                  <span>📝 68 palavras</span>
+                </div>
+                <span class="cta">Revisar →</span>
+              </div>
+            </div>
+
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+                  X (Twitter)
+                </div>
+                <div class="status-dot draft"></div>
+              </div>
+              <div class="post-card-visual gradient-2" style="height: 80px;">
+                <div style="color: var(--mist); font-family: var(--font-display); font-size: 18px;">"ouvir antes de falar."</div>
+              </div>
+              <p class="post-preview">Thread de 3 tweets. Gancho: reflexão sobre escuta política. Dados reais de demandas levantadas no bairro. Compromisso.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>📝 3 tweets</span>
+                  <span>○ Rascunho</span>
+                </div>
+                <span class="cta">Desenvolver →</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- GROUP 3: Efeméride -->
+        <div class="source-group">
+          <div class="source-header">
+            <div class="source-header-left">
+              <div class="source-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="source-info">
+                <div class="source-title"><strong>Fonte:</strong> Efeméride · 22 de abril · Dia do Descobrimento do Brasil</div>
+                <div class="source-meta">Cruzada com pauta educacional da candidata · sugestão de ângulo crítico</div>
+              </div>
+            </div>
+            <div class="source-header-right">
+              <div class="source-count">2 sugestões</div>
+            </div>
+          </div>
+
+          <div class="posts-grid">
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
+                  Instagram · Carrossel
+                </div>
+                <div class="status-dot waiting"></div>
+              </div>
+              <div class="post-card-visual gradient-2">
+                <div class="visual-number" style="color: var(--mist); font-size: 28px;">5 slides</div>
+                <div class="visual-label" style="color: var(--fog);">Educacional</div>
+              </div>
+              <p class="post-preview">Carrossel com leitura crítica da data. <strong>Tom:</strong> nem apologia nem cancelamento. Convite à reflexão histórica. Alinhado com seu discurso em Mar/26.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>📱 5 slides</span>
+                  <span>⚠ Sensível</span>
+                </div>
+                <span class="cta">Revisar →</span>
+              </div>
+            </div>
+            <div class="post-card">
+              <div class="post-card-head">
+                <div class="channel-chip">
+                  <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  Artigo · LinkedIn
+                </div>
+                <div class="status-dot draft"></div>
+              </div>
+              <div class="post-card-visual gradient-2" style="height: 80px;"></div>
+              <p class="post-preview">Texto longo (~600 palavras): "Descobrimento ou invasão? A pergunta que a educação brasileira ainda precisa fazer." Pede aprovação antes de desenvolver.</p>
+              <div class="post-card-foot">
+                <div class="post-card-foot-left">
+                  <span>📝 Rascunho</span>
+                  <span>○ Não desenvolvido</span>
+                </div>
+                <span class="cta">Desenvolver →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Rail -->
+      <aside class="right-rail">
+
+        <!-- Voice Training -->
+        <div class="voice-card">
+          <div class="voice-label">
+            <span class="live-dot"></span>
+            Voz calibrada
+          </div>
+          <div class="voice-title">Marina, a IA está <em>aprendendo você.</em></div>
+          <p class="voice-desc">Treinada com 247 posts antigos, 12 entrevistas e 8 discursos. Quanto mais você aprova, melhor fica.</p>
+          <div class="voice-metrics">
+            <div class="voice-metric">
+              <div class="voice-metric-val">68%</div>
+              <div class="voice-metric-label">Aprov. sem edição</div>
+            </div>
+            <div class="voice-metric">
+              <div class="voice-metric-val">v12</div>
+              <div class="voice-metric-label">Iteração do modelo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sources Today -->
+        <div class="rail-card">
+          <div class="rail-card-title">
+            <span>Fontes de hoje</span>
+            <span style="color: var(--signal);">8 ativas</span>
+          </div>
+          <div class="sources-list">
+            <div class="source-item">
+              <div class="source-item-dot emenda"></div>
+              <div class="source-item-content">
+                <div class="source-item-title">Emenda #2847 · Hospital de Betim</div>
+                <div class="source-item-meta">Executada · 4 posts</div>
+              </div>
+            </div>
+            <div class="source-item">
+              <div class="source-item-dot visita"></div>
+              <div class="source-item-content">
+                <div class="source-item-title">Café · Lideranças Região Leste</div>
+                <div class="source-item-meta">09h42 · 3 posts</div>
+              </div>
+            </div>
+            <div class="source-item">
+              <div class="source-item-dot efemeride"></div>
+              <div class="source-item-content">
+                <div class="source-item-title">22 de abril · Descobrimento</div>
+                <div class="source-item-meta">Efeméride · 2 posts</div>
+              </div>
+            </div>
+            <div class="source-item">
+              <div class="source-item-dot provasocial"></div>
+              <div class="source-item-content">
+                <div class="source-item-title">3 elogios públicos · Instagram</div>
+                <div class="source-item-meta">Prova social · 2 posts</div>
+              </div>
+            </div>
+            <div class="source-item">
+              <div class="source-item-dot visita"></div>
+              <div class="source-item-content">
+                <div class="source-item-title">Entrevista · Rádio Itatiaia · 11h30</div>
+                <div class="source-item-meta">Aguardando · 0 posts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coherence -->
+        <div class="rail-card coherence-card">
+          <div class="rail-card-title"><span>Coerência narrativa</span></div>
+          <div class="coherence-bar-wrap">
+            <div class="coherence-label-row">
+              <span style="color: var(--fog);">Últimos 30 dias</span>
+              <span class="val">94%</span>
+            </div>
+            <div class="coherence-bar">
+              <div class="coherence-fill" style="width: 94%;"></div>
+            </div>
+            <p class="coherence-note">Todos os posts alinhados com posicionamento histórico. 2 alertas resolvidos este mês.</p>
+          </div>
+        </div>
+
+        <!-- Compliance -->
+        <div class="rail-card">
+          <div class="rail-card-title"><span>Compliance TSE · 2026</span></div>
+          <div class="compliance-row">
+            <span class="k">Rotulagem IA</span>
+            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Auto</span>
+          </div>
+          <div class="compliance-row">
+            <span class="k">Blackout pré-pleito</span>
+            <span class="v" style="color: var(--fog);">164 dias</span>
+          </div>
+          <div class="compliance-row">
+            <span class="k">Logs auditáveis</span>
+            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ativo</span>
+          </div>
+          <div class="compliance-row">
+            <span class="k">Conteúdo sintético hoje</span>
+            <span class="v" style="color: var(--mist);">23 peças</span>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

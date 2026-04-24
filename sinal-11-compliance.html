@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinal.ai — Compliance</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #0A0A0B;
+  --ink-soft: #121214;
+  --ink-softer: #1A1A1D;
+  --ink-hover: #202024;
+  --mist: #EDEDE9;
+  --mist-dim: #B8B8B2;
+  --fog: #8A8A86;
+  --fog-soft: #5A5A56;
+  --fog-softer: #3A3A38;
+  --signal: #C5F24A;
+  --signal-dim: #97B938;
+  --signal-glow: rgba(197, 242, 74, 0.12);
+  --positive: #6DD67D;
+  --caution: #F4C544;
+  --negative: #F05D5E;
+  --info: #7FA8E8;
+  --border: rgba(237, 237, 233, 0.06);
+  --border-hover: rgba(237, 237, 233, 0.12);
+  --font-display: 'Instrument Serif', serif;
+  --font-body: 'Geist', -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
+
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* sidebar padrão */
+.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
+.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
+.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
+.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
+.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
+@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
+.logo-text em { font-style: italic; color: var(--signal); }
+
+.nav-section { margin-bottom: 24px; }
+.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; }
+.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active { background: var(--ink-soft); color: var(--mist); }
+.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
+.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
+.nav-badge.alt { background: var(--signal); color: var(--ink); }
+
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
+.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
+.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
+
+/* ===== MAIN ===== */
+.main { padding: 28px 36px 48px; max-width: 1400px; width: 100%; }
+
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
+.breadcrumb .current { color: var(--signal); }
+.breadcrumb-sep { color: var(--fog-softer); }
+
+.main-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.header-title { font-family: var(--font-display); font-size: 42px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
+.header-title em { font-style: italic; color: var(--signal); }
+.header-sub { font-size: 13px; color: var(--fog); margin-top: 10px; max-width: 580px; line-height: 1.5; display: flex; align-items: center; gap: 10px; }
+.header-sub .live-dot { width: 6px; height: 6px; background: var(--positive); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--positive); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); transition: all 0.15s ease; }
+.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
+.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
+.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
+.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+.header-actions { display: flex; gap: 10px; }
+
+/* ===== COMPLIANCE SCORE CARD ===== */
+.score-card {
+  background: linear-gradient(135deg, var(--ink-soft) 0%, var(--ink-softer) 100%);
+  border: 1px solid var(--signal);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 40px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.score-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 450px;
+  height: 450px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--signal-glow) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Big score ring */
+.score-ring-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+}
+
+.score-ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.score-ring-bg {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 14;
+}
+.score-ring-fg {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 14;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px var(--signal-glow));
+}
+
+.score-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-big {
+  font-family: var(--font-display);
+  font-size: 68px;
+  line-height: 1;
+  color: var(--mist);
+  letter-spacing: -0.04em;
+}
+.score-big em { font-style: italic; color: var(--signal); font-size: 36px; margin-left: -4px; }
+.score-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--fog); margin-top: 6px; }
+
+.score-content { position: relative; z-index: 1; }
+
+.score-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.score-kicker::before { content: ''; width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; }
+
+.score-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--mist);
+  margin-bottom: 12px;
+}
+.score-title em { font-style: italic; color: var(--signal); }
+
+.score-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--mist-dim);
+  margin-bottom: 18px;
+  max-width: 520px;
+}
+
+.score-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+.score-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mist);
+  letter-spacing: 0.03em;
+}
+.score-pill svg { width: 12px; height: 12px; stroke: var(--positive); fill: none; stroke-width: 2.5; flex-shrink: 0; }
+
+/* ===== STATUS GRID ===== */
+.status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+
+.status-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+}
+.status-card.active { border-color: var(--signal); border-left: 3px solid var(--signal); padding-left: 18px; }
+.status-card.warning { border-left: 3px solid var(--caution); padding-left: 18px; }
+
+.status-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.status-card-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--ink); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+.status-card-icon svg { width: 14px; height: 14px; stroke: var(--mist); fill: none; stroke-width: 1.5; }
+.status-card.active .status-card-icon { background: var(--signal-glow); border-color: var(--signal); }
+.status-card.active .status-card-icon svg { stroke: var(--signal); }
+.status-card.warning .status-card-icon svg { stroke: var(--caution); }
+
+.status-state { font-family: var(--font-mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+.status-state.on { background: rgba(109, 214, 125, 0.15); color: var(--positive); }
+.status-state.off { background: var(--ink-softer); color: var(--fog); }
+.status-state.soon { background: rgba(244, 197, 68, 0.15); color: var(--caution); }
+
+.status-card-title { font-size: 14px; color: var(--mist); font-weight: 600; margin-bottom: 4px; }
+.status-card-desc { font-size: 12px; color: var(--fog); line-height: 1.5; margin-bottom: 12px; }
+
+.status-card-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--mist);
+  letter-spacing: -0.02em;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.status-card-value em { font-style: italic; color: var(--signal); font-size: 18px; margin-left: 4px; }
+
+/* ===== MAIN GRID ===== */
+.main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+
+/* ===== LOGS SECTION ===== */
+.logs-section { }
+
+.section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.section-heading h2 { font-family: var(--font-display); font-size: 26px; color: var(--mist); letter-spacing: -0.02em; font-weight: 400; }
+.section-heading h2 em { font-style: italic; color: var(--signal); }
+.section-heading-meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
+
+.logs-filters { display: flex; gap: 4px; margin-bottom: 14px; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 10px; padding: 5px; }
+.log-tab { font-family: var(--font-mono); font-size: 10px; padding: 7px 12px; border-radius: 6px; background: transparent; border: none; color: var(--fog); cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+.log-tab:hover { color: var(--mist); }
+.log-tab.active { background: var(--ink); color: var(--mist); }
+.log-tab .count { color: var(--fog-soft); margin-left: 5px; }
+.log-tab.active .count { color: var(--signal); }
+
+/* Logs terminal feel */
+.logs-list { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+.log-row {
+  display: grid;
+  grid-template-columns: 80px 90px 1fr auto;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.log-row:first-child { border-top: none; }
+.log-row:hover { background: var(--ink-hover); }
+
+.log-time { color: var(--fog); letter-spacing: 0.03em; }
+
+.log-type {
+  font-size: 9px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-align: center;
+}
+.log-type.post { background: rgba(197, 242, 74, 0.15); color: var(--signal); }
+.log-type.msg { background: rgba(127, 168, 232, 0.15); color: var(--info); }
+.log-type.action { background: rgba(244, 197, 68, 0.15); color: var(--caution); }
+.log-type.alert { background: rgba(240, 93, 94, 0.15); color: var(--negative); }
+.log-type.approve { background: rgba(109, 214, 125, 0.15); color: var(--positive); }
+
+.log-content { color: var(--mist); line-height: 1.5; font-family: var(--font-body); font-size: 13px; letter-spacing: -0.01em; min-width: 0; }
+.log-content strong { color: var(--signal); font-weight: 500; }
+.log-content .hash { color: var(--fog); font-family: var(--font-mono); font-size: 11px; }
+.log-content .author { color: var(--info); font-weight: 500; }
+
+.log-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--positive);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.log-status svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+.log-status.warning { color: var(--caution); }
+.log-status.rejected { color: var(--negative); }
+
+/* ===== RIGHT RAIL ===== */
+.rail { display: flex; flex-direction: column; gap: 14px; }
+
+.rail-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.rail-card-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.rail-card-title em { font-style: italic; color: var(--signal); font-family: var(--font-display); font-size: 13px; letter-spacing: 0; text-transform: none; }
+
+/* Blackout card */
+.blackout-card {
+  background: var(--ink);
+  border: 1px solid var(--signal);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.blackout-card::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -30%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--signal-glow) 0%, transparent 70%);
+}
+
+.blackout-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+.blackout-label svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.blackout-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--mist);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+.blackout-title em { font-style: italic; color: var(--signal); }
+
+.blackout-countdown {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+.cd-unit { text-align: center; }
+.cd-val { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--signal); letter-spacing: -0.02em; }
+.cd-label { font-family: var(--font-mono); font-size: 9px; color: var(--fog); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+.blackout-desc {
+  font-size: 12px;
+  color: var(--mist-dim);
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+.blackout-desc strong { color: var(--signal); font-weight: 500; }
+
+/* Regulatory */
+.reg-item { padding: 12px 0; border-top: 1px solid var(--border); font-size: 12.5px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.reg-item:first-of-type { border-top: none; padding-top: 0; }
+.reg-item-text { color: var(--mist); flex: 1; line-height: 1.4; }
+.reg-item-text small { color: var(--fog); font-family: var(--font-mono); font-size: 10px; display: block; margin-top: 3px; letter-spacing: 0.03em; }
+.reg-item-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(109, 214, 125, 0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.reg-item-check svg { width: 10px; height: 10px; stroke: var(--positive); fill: none; stroke-width: 3; }
+
+/* Deadline card */
+.deadline-card {
+  background: var(--ink);
+  border: 1px solid var(--caution);
+  border-left: 3px solid var(--caution);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.deadline-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--caution);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.deadline-title { font-size: 13.5px; color: var(--mist); font-weight: 500; margin-bottom: 6px; line-height: 1.4; }
+.deadline-date { font-family: var(--font-mono); font-size: 11px; color: var(--caution); }
+
+@media (max-width: 1200px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .score-card { grid-template-columns: 1fr; gap: 24px; text-align: center; }
+  .status-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .log-row { grid-template-columns: 1fr; gap: 6px; padding: 14px 16px; }
+  .logs-filters { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+      <div class="logo-mark">
+        <div class="logo-ring r1"></div>
+        <div class="logo-ring r2"></div>
+        <div class="logo-dot"></div>
+      </div>
+      <div class="logo-text">sinal<em>.ai</em></div></a>
+
+    <div class="nav-section">
+      <div class="nav-label">Operação</div>
+      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <a href="sinal-02-gerador-posts.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
+      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Territorial</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Inteligência</div>
+      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Governança</div>
+      <a href="sinal-11-compliance.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="candidate-badge">
+        <div class="candidate-avatar">MA</div>
+        <div>
+          <div class="candidate-name">Marina Aguiar</div>
+          <div class="candidate-role">Dep. Estadual · MG</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span>Sinal</span><span class="breadcrumb-sep">/</span>
+      <span>Governança</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Central de Compliance</span>
+    </div>
+
+    <div class="main-header">
+      <div>
+        <h1 class="header-title">Blindagem <em>jurídica.</em></h1>
+        <p class="header-sub">
+          <span class="live-dot"></span>
+          Todas as peças rotuladas, arquivadas e auditáveis · Res. TSE nº 23.732/2026
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Baixar relatório jurídico</button>
+        <button class="btn"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Compartilhar com advogado</button>
+      </div>
+    </div>
+
+    <!-- SCORE CARD -->
+    <div class="score-card">
+
+      <div class="score-ring-wrap">
+        <svg class="score-ring-svg" viewBox="0 0 220 220">
+          <circle class="score-ring-bg" cx="110" cy="110" r="95"></circle>
+          <circle class="score-ring-fg" cx="110" cy="110" r="95"
+                  stroke-dasharray="596.9"
+                  stroke-dashoffset="23.9"></circle>
+        </svg>
+        <div class="score-center">
+          <div class="score-big">96<em>/100</em></div>
+          <div class="score-label">Compliance score</div>
+        </div>
+      </div>
+
+      <div class="score-content">
+        <div class="score-kicker">Conformidade TSE 2026</div>
+        <h2 class="score-title">Sua campanha está <em>blindada.</em></h2>
+        <p class="score-desc">
+          Todas as peças geradas por IA são rotuladas automaticamente, todos os logs têm hash criptográfico
+          e toda interação cumpre integralmente a Resolução TSE nº 23.732/2026. Em caso de
+          representação, você tem defesa documental completa.
+        </p>
+        <div class="score-pills">
+          <div class="score-pill">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Rotulagem automática
+          </div>
+          <div class="score-pill">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Logs auditáveis
+          </div>
+          <div class="score-pill">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Hash criptográfico
+          </div>
+          <div class="score-pill">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            LGPD · consentimento ativo
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STATUS GRID -->
+    <div class="status-grid">
+
+      <div class="status-card active">
+        <div class="status-card-head">
+          <div class="status-card-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 4L8.5 15.5 4 11"/></svg>
+          </div>
+          <span class="status-state on">Ativo</span>
+        </div>
+        <div class="status-card-title">Rotulagem IA</div>
+        <p class="status-card-desc">Todo conteúdo gerado por IA recebe metadados de identificação visível ao publicar.</p>
+        <div class="status-card-value">1.847 <em>peças</em></div>
+      </div>
+
+      <div class="status-card active">
+        <div class="status-card-head">
+          <div class="status-card-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <span class="status-state on">Ativo</span>
+        </div>
+        <div class="status-card-title">Logs auditáveis</div>
+        <p class="status-card-desc">Cada ação registrada com timestamp, autor, hash e versionamento imutável.</p>
+        <div class="status-card-value">12.4K <em>entradas</em></div>
+      </div>
+
+      <div class="status-card warning">
+        <div class="status-card-head">
+          <div class="status-card-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <span class="status-state soon">164 dias</span>
+        </div>
+        <div class="status-card-title">Blackout pré-pleito</div>
+        <p class="status-card-desc">72h antes do 1º turno, bloqueio automático de conteúdo sintético novo.</p>
+        <div class="status-card-value">01 Out <em>15:00</em></div>
+      </div>
+
+      <div class="status-card active">
+        <div class="status-card-head">
+          <div class="status-card-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          </div>
+          <span class="status-state on">Validado</span>
+        </div>
+        <div class="status-card-title">LGPD · base de contatos</div>
+        <p class="status-card-desc">Consentimento expresso em 100% dos contatos ativos no CRM.</p>
+        <div class="status-card-value">8.247 <em>contatos</em></div>
+      </div>
+
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+
+      <!-- ========= LOGS ========= -->
+      <div class="logs-section">
+
+        <div class="section-heading">
+          <h2>Trilha de <em>auditoria</em></h2>
+          <span class="section-heading-meta">Últimas 100 ações · atualizado em tempo real</span>
+        </div>
+
+        <div class="logs-filters">
+          <button class="log-tab active">Todas <span class="count">12.4K</span></button>
+          <button class="log-tab">Posts <span class="count">1.847</span></button>
+          <button class="log-tab">Mensagens <span class="count">6.284</span></button>
+          <button class="log-tab">Aprovações <span class="count">1.242</span></button>
+          <button class="log-tab">Alertas <span class="count">47</span></button>
+          <button class="log-tab">Governança <span class="count">284</span></button>
+        </div>
+
+        <div class="logs-list">
+
+          <div class="log-row">
+            <div class="log-time">14:03:42</div>
+            <div class="log-type post">POST</div>
+            <div class="log-content">
+              Post Instagram Feed publicado com <strong>#gerado-com-ia</strong> · "Hospital de Betim — R$ 1.2M…" <span class="hash">hash: a8f3e2d1</span>
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Ok
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">14:01:18</div>
+            <div class="log-type approve">APROVAÇÃO</div>
+            <div class="log-content">
+              Post #P-847 aprovado por <span class="author">@marina.aguiar</span> após revisão de <span class="author">@ana.coord</span> · versão v3
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Registrado
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">13:58:07</div>
+            <div class="log-type msg">WHATSAPP</div>
+            <div class="log-content">
+              Resposta IA enviada · #resposta-demanda-local · contato <strong>José Carlos Lima</strong> (Betim) <span class="hash">#LOG-C-8842</span>
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Ok
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">13:45:23</div>
+            <div class="log-type alert">ALERTA</div>
+            <div class="log-content">
+              Fake news detectada · áudio manipulado em Contagem · evidência <span class="hash">#FN-2026-0421-001</span> arquivada com hash
+            </div>
+            <div class="log-status warning">
+              <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+              Em análise
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">13:22:54</div>
+            <div class="log-type post">POST</div>
+            <div class="log-content">
+              Reel TikTok publicado com <strong>#gerado-com-ia</strong> · "R$ 1.2M saiu do papel hoje" · duração 18s
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Ok
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">13:14:38</div>
+            <div class="log-type action">SISTEMA</div>
+            <div class="log-content">
+              Atualização da voz do modelo · v12 → v13 · treinada com 12 novas peças aprovadas por <span class="author">@marina.aguiar</span>
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Concluído
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">12:58:11</div>
+            <div class="log-type msg">INSTAGRAM</div>
+            <div class="log-content">
+              Resposta IA enviada em comentário público · post #P-832 · contato <strong>@beatrizcontagem87</strong>
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Ok
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">12:40:02</div>
+            <div class="log-type action">HUMANO</div>
+            <div class="log-content">
+              <span class="author">@bruno.assessor</span> assumiu conversa com jornalista <strong>Roberto Pires (Itatiaia)</strong> · IA suspensa em sessão
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Registrado
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">12:14:30</div>
+            <div class="log-type approve">APROVAÇÃO</div>
+            <div class="log-content">
+              Banco de respostas atualizado · nova variante para <strong>"Qual sua posição sobre PEC 147"</strong> aprovada · <span class="author">@marina.aguiar</span>
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Registrado
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">11:52:08</div>
+            <div class="log-type alert">REJEITADO</div>
+            <div class="log-content">
+              Post bloqueado automaticamente · detectada inconsistência com posicionamento histórico · revisão humana necessária
+            </div>
+            <div class="log-status rejected">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Não publicado
+            </div>
+          </div>
+
+          <div class="log-row">
+            <div class="log-time">11:30:14</div>
+            <div class="log-type action">LGPD</div>
+            <div class="log-content">
+              Contato <strong>@paulobh</strong> solicitou exclusão de dados · removido de 3 listas · confirmação enviada em 2 min
+            </div>
+            <div class="log-status">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Executado
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========= RAIL ========= -->
+      <aside class="rail">
+
+        <!-- Blackout countdown -->
+        <div class="blackout-card">
+          <div class="blackout-label">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Blackout automático
+          </div>
+          <div class="blackout-title">72h antes do <em>1º turno.</em></div>
+
+          <div class="blackout-countdown">
+            <div class="cd-unit">
+              <div class="cd-val">164</div>
+              <div class="cd-label">Dias</div>
+            </div>
+            <div class="cd-unit">
+              <div class="cd-val">08</div>
+              <div class="cd-label">Horas</div>
+            </div>
+            <div class="cd-unit">
+              <div class="cd-val">42</div>
+              <div class="cd-label">Min</div>
+            </div>
+          </div>
+
+          <p class="blackout-desc">
+            A partir de <strong>01 de outubro, 15h00</strong>, geração de conteúdo sintético fica bloqueada
+            automaticamente conforme Res. TSE 23.732/2026.
+          </p>
+        </div>
+
+        <!-- Regulatory coverage -->
+        <div class="rail-card">
+          <div class="rail-card-title">
+            <span>Normas cobertas</span>
+            <em>TSE 2026</em>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              Rotulagem de conteúdo sintético
+              <small>Res. 23.732 · art. 9º-B</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              Blackout de 72h pré-pleito
+              <small>Res. 23.732 · art. 9º-C</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              Identificação de propaganda impulsionada
+              <small>Res. 23.610 · art. 28</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              Vedação a deepfake eleitoral
+              <small>Res. 23.732 · art. 9º-A</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              LGPD · base de eleitores
+              <small>Lei 13.709/2018</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+          <div class="reg-item">
+            <div class="reg-item-text">
+              Proibição de IA para dano eleitoral
+              <small>Res. 23.732 · art. 9º-D</small>
+            </div>
+            <div class="reg-item-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          </div>
+
+        </div>
+
+        <!-- Deadlines -->
+        <div class="rail-card">
+          <div class="rail-card-title">
+            <span>Próximos prazos</span>
+            <em>legais</em>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="deadline-card">
+              <div class="deadline-label">Prestação parcial</div>
+              <div class="deadline-title">Primeira prestação de contas à Justiça Eleitoral</div>
+              <div class="deadline-date">Em 38 dias · 29 Mai</div>
+            </div>
+
+            <div class="deadline-card" style="border-color: var(--border); border-left-color: var(--fog-soft);">
+              <div class="deadline-label" style="color: var(--fog);">Registro</div>
+              <div class="deadline-title">Prazo final para registro de candidatura</div>
+              <div class="deadline-date" style="color: var(--fog);">Em 76 dias · 06 Jul</div>
+            </div>
+
+            <div class="deadline-card" style="border-color: var(--border); border-left-color: var(--fog-soft);">
+              <div class="deadline-label" style="color: var(--fog);">Campanha oficial</div>
+              <div class="deadline-title">Início da propaganda eleitoral gratuita</div>
+              <div class="deadline-date" style="color: var(--fog);">Em 131 dias · 30 Ago</div>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>
