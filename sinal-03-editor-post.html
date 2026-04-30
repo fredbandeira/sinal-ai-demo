@@ -23,740 +23,1274 @@
   --signal: #C5F24A;
   --signal-dim: #97B938;
   --signal-glow: rgba(197, 242, 74, 0.12);
+  --signal-glow-strong: rgba(197, 242, 74, 0.2);
   --positive: #6DD67D;
   --caution: #F4C544;
   --negative: #F05D5E;
+  --info: #7FA8E8;
   --border: rgba(237, 237, 233, 0.06);
-  --border-hover: rgba(237, 237, 233, 0.12);
+  --border-hover: rgba(237, 237, 233, 0.14);
+
+  --cat-parlamentar-1: #2E5141;
+  --cat-parlamentar-2: #C5F24A;
+
   --font-display: 'Instrument Serif', serif;
   --font-body: 'Geist', -apple-system, sans-serif;
   --font-mono: 'Geist Mono', monospace;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
+html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; min-height: 100vh; }
 body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
 
-.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 
-/* ===== SIDEBAR ===== */
-.sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
-.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
-.logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-.logo-dot { width: 8px; height: 8px; background: var(--signal); border-radius: 50%; z-index: 3; box-shadow: 0 0 12px var(--signal-glow); }
-.logo-ring { position: absolute; border-radius: 50%; border: 1px solid var(--signal); animation: ring-pulse 2.5s infinite ease-out; }
-.logo-ring.r1 { width: 16px; height: 16px; opacity: 0.6; }
-.logo-ring.r2 { width: 22px; height: 22px; opacity: 0.3; animation-delay: 0.4s; }
-@keyframes ring-pulse { 0% { transform: scale(0.5); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
-.logo-text { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); }
-.logo-text em { font-style: italic; color: var(--signal); }
-
-.nav-section { margin-bottom: 24px; }
-.nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; transition: all 0.15s ease; margin-bottom: 2px; position: relative; }
-.nav-item:hover { background: var(--ink-soft); color: var(--mist); }
-.nav-item.active { background: var(--ink-soft); color: var(--mist); }
-.nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
-.nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; flex-shrink: 0; }
-.nav-badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; background: var(--negative); color: var(--mist); padding: 2px 6px; border-radius: 100px; font-weight: 600; }
-.nav-badge.alt { background: var(--signal); color: var(--ink); }
-
-.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
-.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); cursor: pointer; }
-.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
-.candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
-.candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
-
-/* ===== MAIN ===== */
-.main { padding: 24px 32px 48px; max-width: 1400px; width: 100%; }
-
-.breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 20px; }
-.breadcrumb .current { color: var(--signal); }
-.breadcrumb-sep { color: var(--fog-softer); }
-.breadcrumb a { color: var(--fog); text-decoration: none; cursor: pointer; }
-.breadcrumb a:hover { color: var(--mist); }
-
-.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); }
-.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
-.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
-.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
-.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-/* ===== EDITOR LAYOUT ===== */
-.editor-layout { display: grid; grid-template-columns: 1fr 340px 340px; gap: 20px; }
-
-/* ===== CENTER: EDITOR PANEL ===== */
-.editor-panel { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 16px; padding: 28px; }
-
-.editor-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-
-.editor-meta {
+/* ===== TOP BAR (60px) ===== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(10, 10, 11, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
   align-items: center;
+  gap: 24px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--fog);
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+.back-link:hover { color: var(--mist); }
+.back-link svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.topbar-divider { width: 1px; height: 22px; background: var(--border); }
+
+.topbar-breadcrumb {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--fog);
-  letter-spacing: 0.05em;
-  margin-bottom: 10px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-.editor-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--fog-soft); }
-.editor-meta .channel {
-  color: var(--signal);
+  color: var(--fog);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
-.editor-meta .channel svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.topbar-breadcrumb .current { color: var(--signal); }
+.topbar-breadcrumb-sep { color: var(--fog-softer); }
 
-.editor-title { font-family: var(--font-display); font-size: 32px; line-height: 1.1; letter-spacing: -0.02em; color: var(--mist); }
-.editor-title em { font-style: italic; color: var(--signal); }
-
-.editor-head-actions { display: flex; gap: 8px; align-items: center; }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
 .save-status {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--fog);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-right: 8px;
-}
-.save-status .check { width: 4px; height: 4px; background: var(--positive); border-radius: 50%; }
-
-/* ===== POST PREVIEW (IG mock) ===== */
-.post-preview {
-  background: var(--mist);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 24px;
-  color: var(--ink);
-  max-width: 440px;
-}
-
-.post-preview-head {
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid rgba(10,10,11,0.08);
-}
-.preview-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; border: 2px solid var(--mist); box-shadow: 0 0 0 2px var(--signal-dim); }
-.preview-user { font-weight: 600; font-size: 13px; color: var(--ink); }
-.preview-user-sub { font-size: 11px; color: rgba(10,10,11,0.5); margin-top: 1px; }
-.preview-more { margin-left: auto; color: rgba(10,10,11,0.5); font-size: 20px; letter-spacing: 2px; }
-
-.post-preview-image {
-  aspect-ratio: 1 / 1;
-  background: linear-gradient(135deg, var(--signal) 0%, var(--signal-dim) 100%);
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-}
-.post-preview-image::after {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -20%;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(10,10,11,0.08) 0%, transparent 60%);
-}
-.preview-big-num { font-family: var(--font-display); font-size: 88px; line-height: 0.9; color: var(--ink); letter-spacing: -0.04em; position: relative; z-index: 1; }
-.preview-caption { font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--ink); max-width: 60%; line-height: 1.25; position: relative; z-index: 1; }
-.preview-sig-logo {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  font-family: var(--font-display);
-  font-size: 14px;
-  color: var(--ink);
-  opacity: 0.6;
-  z-index: 1;
-}
-
-.post-preview-actions {
-  padding: 12px 14px;
-  display: flex;
-  gap: 14px;
-}
-.preview-action-icon { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.5; cursor: pointer; }
-
-.post-preview-caption-block {
-  padding: 0 14px 14px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink);
-}
-.post-preview-caption-block b { font-weight: 600; }
-
-/* Editor textarea */
-.text-editor { background: var(--ink); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.15s ease; }
-.text-editor:focus-within { border-color: var(--signal); }
-
-.text-editor-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.text-editor-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
-.text-editor-counter { font-family: var(--font-mono); font-size: 11px; color: var(--fog); }
-
-.text-editor-area {
-  width: 100%;
-  min-height: 140px;
-  background: transparent;
-  border: none;
-  color: var(--mist);
-  font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
-  resize: vertical;
-  outline: none;
-  font-weight: 400;
-}
-.text-editor-area::placeholder { color: var(--fog-soft); }
-
-.text-editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-.text-editor-inline-actions { display: flex; gap: 6px; }
-.inline-btn {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 5px 9px;
-  border-radius: 6px;
-  background: var(--ink-softer);
-  color: var(--fog);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all 0.15s ease;
-}
-.inline-btn:hover { color: var(--mist); border-color: var(--border-hover); }
-.inline-btn.ai { color: var(--signal); border-color: var(--signal-dim); background: var(--signal-glow); }
-
-.hashtags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-.hashtag { font-family: var(--font-mono); font-size: 11px; color: var(--signal); padding: 4px 8px; border-radius: 6px; background: var(--signal-glow); cursor: pointer; border: 1px solid transparent; }
-.hashtag:hover { border-color: var(--signal); }
-
-/* Approvals */
-.approval-flow { margin-top: 24px; background: var(--ink); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-.approval-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
-.approval-steps { display: flex; align-items: center; gap: 0; }
-.approval-step { flex: 1; text-align: center; position: relative; }
-.approval-step::after { content: ''; position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
-.approval-step:last-child::after { display: none; }
-.approval-step.done::after { background: var(--signal); }
-.approval-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
-.approval-step.done .approval-dot { background: var(--signal); color: var(--ink); }
-.approval-step.current .approval-dot { background: var(--ink-softer); color: var(--signal); border: 2px solid var(--signal); }
-.approval-step.pending .approval-dot { background: var(--ink-softer); color: var(--fog); border: 1px solid var(--border); }
-.approval-step-name { font-size: 12px; color: var(--mist); font-weight: 500; }
-.approval-step-sub { font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 2px; }
-
-/* Bottom action bar */
-.bottom-bar {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.bottom-left {
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--fog);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.save-status:hover { color: var(--mist-dim); }
+.save-status .save-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--positive);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--positive);
 }
 
-.bottom-right { display: flex; gap: 10px; }
+.btn-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: var(--mist-dim);
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+.btn-context:hover { border-color: var(--border-hover); color: var(--mist); }
+.btn-context svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-/* ===== LEFT: VARIATIONS ===== */
-.variations-panel { }
+/* ===== EDITOR CONTAINER ===== */
+.editor {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 56px 48px 120px;
+}
 
-.panel-title {
+/* ===== HEADER (140px) ===== */
+.editor-header { margin-bottom: 40px; }
+
+.header-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.tag-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--signal-glow);
+  color: var(--signal);
+}
+
+.header-source {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.header-source strong { color: var(--mist-dim); font-weight: 500; }
+
+.editor-headline {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--mist);
+  font-weight: 400;
+  max-width: 920px;
+}
+.editor-headline em { font-style: italic; color: var(--signal); }
+
+/* ===== VARIATIONS (4 cards horizontais) ===== */
+.variations-section {
+  margin-bottom: 32px;
+}
+
+.variations-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.variations-label::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--fog-softer);
+}
+
+.variations-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.variation-card {
+  position: relative;
+  padding: 16px 18px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 130px;
+}
+
+.variation-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.variation-card.active {
+  border-color: var(--signal);
+  background: rgba(197, 242, 74, 0.04);
+  box-shadow: 0 8px 28px rgba(197, 242, 74, 0.08);
+}
+
+.variation-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.variation-card-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.variation-card.active .variation-card-icon {
+  background: var(--signal-glow);
+  border-color: transparent;
+}
+
+.variation-card-check {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--signal);
+  align-items: center;
+  justify-content: center;
+}
+.variation-card.active .variation-card-check { display: flex; }
+.variation-card-check svg { width: 10px; height: 10px; stroke: var(--ink); fill: none; stroke-width: 3; }
+
+.variation-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mist);
+  letter-spacing: -0.005em;
+}
+.variation-card.active .variation-card-label { color: var(--signal); }
+
+.variation-card-preview {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--fog);
+  font-weight: 300;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.variation-card.active .variation-card-preview { color: var(--mist-dim); }
+
+.variation-card-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: var(--fog-soft);
+  margin-top: auto;
+}
+.variation-card.active .variation-card-meta { color: var(--signal-dim); }
+
+/* ===== EDIT AREA (split: thumb + editor) ===== */
+.edit-area {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+/* THUMB (column 1) */
+.thumb-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.column-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fog);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 2px;
+}
+.column-label::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--fog-softer);
+}
+
+.thumb {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 26px;
+  isolation: isolate;
+  aspect-ratio: 4/5;
+  background: linear-gradient(135deg, var(--cat-parlamentar-1) 0%, #1A332A 80%);
+}
+
+.thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(197, 242, 74, 0.18), transparent 50%);
+  z-index: 0;
+}
+
+.thumb > * { position: relative; z-index: 1; }
+
+.thumb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.thumb-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--cat-parlamentar-2);
+}
+
+.thumb-mark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+.thumb-mark-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--cat-parlamentar-2);
+}
+
+.thumb-highlight {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-size: 80px;
+  color: var(--cat-parlamentar-2);
+  margin-bottom: 14px;
+}
+
+.thumb-headline {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--mist);
+  font-weight: 400;
+  max-width: 92%;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.thumb-headline em { font-style: italic; color: var(--cat-parlamentar-2); }
+
+.thumb-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(237,237,233,0.7);
+  font-weight: 300;
+  line-height: 1.4;
+  max-width: 90%;
+}
+
+.thumb-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.thumb-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thumb-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--mist);
+  font-weight: 600;
+}
+
+.thumb-author-info { display: flex; flex-direction: column; }
+.thumb-author-name { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.85); }
+.thumb-author-handle { font-family: var(--font-mono); font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.04em; }
+
+/* Thumb actions (regenerar arte) */
+.thumb-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.thumb-action-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mist-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.thumb-action-btn:hover { border-color: var(--border-hover); color: var(--mist); }
+.thumb-action-btn svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* EDITOR (column 2) */
+.editor-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editor-textarea-wrap {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-textarea-wrap:focus-within {
+  border-color: var(--border-hover);
+}
+
+.editor-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--mist);
+  font-weight: 300;
+  letter-spacing: -0.005em;
+  width: 100%;
+  min-height: 360px;
+}
+
+.editor-textarea::placeholder { color: var(--fog-soft); }
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 18px;
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fog);
+  font-size: 13px;
+  transition: all 0.15s ease;
+  font-weight: 600;
+}
+.toolbar-btn:hover { background: var(--ink-hover); color: var(--mist); }
+.toolbar-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.toolbar-divider { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
+
+.editor-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  letter-spacing: 0.04em;
+}
+.editor-stats strong { color: var(--mist-dim); font-weight: 500; }
+.editor-stats .ok { color: var(--positive); }
+
+/* HASHTAGS */
+.hashtags-section {
+  margin-top: 14px;
+  padding: 18px 22px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.hashtags-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 12px;
+}
+
+.hashtags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hashtag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(127, 168, 232, 0.1);
+  border: 1px solid rgba(127, 168, 232, 0.2);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: var(--info);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.hashtag-chip:hover { background: rgba(127, 168, 232, 0.18); }
+
+.hashtag-chip-x {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--info);
+  opacity: 0.6;
+  margin-left: 2px;
+}
+.hashtag-chip-x:hover { opacity: 1; }
+
+.hashtag-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--ink);
+  border: 1px dashed var(--border-hover);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--fog);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.hashtag-add:hover { border-color: var(--signal); color: var(--signal); }
+.hashtag-add svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* ===== FOOTER ACTION BAR ===== */
+.action-bar {
+  position: sticky;
+  bottom: 24px;
+  margin-top: 16px;
+  background: var(--ink-soft);
+  border: 1px solid var(--border-hover);
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  flex-wrap: wrap;
+}
+
+.metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+.metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--mist);
+  letter-spacing: -0.02em;
+}
+.metric-value em {
+  font-style: italic;
+  color: var(--signal);
+  font-size: 14px;
+}
+
+.metric-value-text {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--positive);
+  letter-spacing: -0.01em;
+}
+
+.metric-divider { width: 1px; height: 32px; background: var(--border); }
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--mist);
+  padding: 12px 20px;
+  border: 1px solid var(--border-hover);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+.btn-secondary:hover { border-color: var(--mist-dim); }
+.btn-secondary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.btn-primary {
+  background: var(--signal);
+  color: var(--ink);
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 16px var(--signal-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--signal-glow-strong);
+}
+.btn-primary svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ===== CONTEXT DRAWER ===== */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 90vw;
+  background: var(--ink-soft);
+  border-left: 1px solid var(--border);
+  z-index: 70;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-head {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-title {
   font-family: var(--font-display);
   font-size: 22px;
   color: var(--mist);
   letter-spacing: -0.02em;
-  margin-bottom: 4px;
-  font-weight: 400;
 }
-.panel-title em { font-style: italic; color: var(--signal); }
-.panel-subtitle { font-size: 12px; color: var(--fog); margin-bottom: 16px; line-height: 1.5; }
+.drawer-title em { font-style: italic; color: var(--signal); }
 
-.variation-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s ease; }
-.variation-card:hover { border-color: var(--border-hover); }
-.variation-card.selected { border-color: var(--signal); background: var(--ink-softer); }
-.variation-card.selected::before {
-  content: '✓';
-  float: right;
-  color: var(--signal);
-  font-weight: bold;
-  font-size: 14px;
+.drawer-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fog);
+  transition: all 0.15s ease;
+}
+.drawer-close:hover { background: var(--ink-hover); color: var(--mist); }
+.drawer-close svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
 }
 
-.variation-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.variation-name {
+.drawer-section {
+  margin-bottom: 28px;
+}
+
+.drawer-section-label {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--signal);
+  color: var(--signal-dim);
+  margin-bottom: 12px;
   font-weight: 600;
 }
-.variation-score {
+
+.drawer-data-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.drawer-data-row:last-child { border-bottom: none; }
+.drawer-data-row .key { color: var(--fog); }
+.drawer-data-row .value { color: var(--mist); font-weight: 500; }
+
+.drawer-comment {
+  padding: 14px 16px;
+  background: var(--ink);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.drawer-comment-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mist);
+}
+.drawer-comment-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--signal-dim), #5C7C2C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.drawer-comment-time {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--fog);
+  margin-left: auto;
+  font-weight: 400;
 }
-.variation-score strong { color: var(--mist); font-weight: 600; }
-
-.variation-text { font-size: 13px; line-height: 1.45; color: var(--mist); }
-.variation-card.selected .variation-text { color: var(--mist); }
-.variation-text b { color: var(--signal); font-weight: 500; }
-
-.variation-tags { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
-.variation-tag { font-family: var(--font-mono); font-size: 9px; color: var(--fog); padding: 2px 6px; background: var(--ink); border-radius: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
-
-.generate-more {
-  margin-top: 4px;
-  padding: 14px;
-  border: 1px dashed var(--border-hover);
-  border-radius: 12px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--fog);
+.drawer-comment-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mist-dim);
 }
-.generate-more:hover { border-color: var(--signal); color: var(--signal); background: var(--signal-glow); }
 
-/* ===== RIGHT: CONTEXT & INTELLIGENCE ===== */
-.context-panel { }
-
-.context-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
-
-.context-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
-.context-title .live { color: var(--signal); display: flex; align-items: center; gap: 6px; }
-.context-title .live::before { content: ''; width: 5px; height: 5px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-.source-detail { padding: 12px 0; border-top: 1px solid var(--border); font-size: 12px; display: flex; justify-content: space-between; }
-.source-detail:first-of-type { border-top: none; padding-top: 0; }
-.source-detail .k { color: var(--fog); }
-.source-detail .v { color: var(--mist); font-weight: 500; text-align: right; max-width: 60%; }
-.source-detail .v strong { color: var(--signal); font-weight: 500; }
-
-/* Voice match */
-.voice-match-bar {
+.drawer-version {
   display: flex;
-  height: 6px;
-  background: var(--ink);
-  border-radius: 3px;
-  overflow: hidden;
-  margin: 10px 0 6px;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0 -12px;
 }
-.voice-match-fill { background: linear-gradient(90deg, var(--signal-dim), var(--signal)); height: 100%; border-radius: 3px; }
-
-.voice-check { display: flex; justify-content: space-between; padding: 8px 0; font-size: 12px; border-top: 1px solid var(--border); }
-.voice-check:first-of-type { border-top: none; }
-.voice-check .k { color: var(--fog); }
-.voice-check .v { display: flex; align-items: center; gap: 6px; color: var(--mist); }
-.voice-check .v svg { width: 12px; height: 12px; stroke: var(--positive); fill: none; stroke-width: 2.5; }
-.voice-check .v.warn svg { stroke: var(--caution); }
-
-/* Engagement prediction */
-.pred-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
-.pred-cell { background: var(--ink); border-radius: 8px; padding: 12px; text-align: center; }
-.pred-val { font-family: var(--font-display); font-size: 22px; line-height: 1; color: var(--mist); letter-spacing: -0.02em; }
-.pred-val.good { color: var(--signal); }
-.pred-label { font-family: var(--font-mono); font-size: 9px; color: var(--fog); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-/* Compliance inline */
-.compliance-inline { background: var(--ink); border: 1px solid var(--signal-dim); border-radius: 10px; padding: 14px; }
-.compliance-inline-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.compliance-inline-head svg { width: 14px; height: 14px; stroke: var(--signal); fill: none; stroke-width: 2; }
-.compliance-inline-head span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); font-weight: 600; }
-.compliance-inline p { font-size: 12px; line-height: 1.5; color: var(--mist-dim); }
-.compliance-inline code { font-family: var(--font-mono); font-size: 11px; background: var(--ink-softer); padding: 1px 5px; border-radius: 4px; color: var(--signal); }
-
-@media (max-width: 1280px) {
-  .editor-layout { grid-template-columns: 1fr 320px; }
-  .context-panel { grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.drawer-version:hover { background: var(--ink-hover); }
+.drawer-version-info { display: flex; flex-direction: column; gap: 2px; }
+.drawer-version-author { color: var(--mist); font-weight: 500; }
+.drawer-version-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.04em; }
+.drawer-version-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fog);
+  align-self: center;
 }
-@media (max-width: 900px) {
-  .app { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .main { padding: 20px 16px; }
-  .editor-layout { grid-template-columns: 1fr; }
-  .context-panel { grid-column: span 1; grid-template-columns: 1fr; }
+
+@media (max-width: 1100px) {
+  .edit-area { grid-template-columns: 1fr; }
+  .thumb-column { max-width: 360px; }
+  .variations-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .editor { padding: 32px 20px 100px; }
+  .editor-headline { font-size: 32px; }
+  .topbar { padding: 12px 20px; }
+  .topbar-breadcrumb { display: none; }
+  .action-bar { flex-direction: column; align-items: stretch; }
+  .metrics-row { justify-content: space-between; gap: 12px; }
+  .action-buttons { justify-content: stretch; }
+  .action-buttons button { flex: 1; justify-content: center; }
+  .variations-grid { grid-template-columns: 1fr 1fr; }
+  .drawer { width: 100%; }
 }
 </style>
 </head>
 <body>
 
-<div class="app">
-
-  <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar">
-    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-      <div class="logo-mark">
-        <div class="logo-ring r1"></div>
-        <div class="logo-ring r2"></div>
-        <div class="logo-dot"></div>
-      </div>
-      <div class="logo-text">sinal<em>.ai</em></div></a>
-
-    <div class="nav-section">
-      <div class="nav-label">Operação</div>
-      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
-      <a href="sinal-02-gerador-posts.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
-      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
-      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
-      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-label">Inteligência</div>
-      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
-      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Fake News<span class="nav-badge">1</span></a>
-      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
-    </div>
-
-    <div class="nav-section">
-      <div class="nav-label">Governança</div>
-      <a href="sinal-11-compliance.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
-    </div>
-
-    <div class="sidebar-footer">
-      <div class="candidate-badge">
-        <div class="candidate-avatar">MA</div>
-        <div>
-          <div class="candidate-name">Marina Aguiar</div>
-          <div class="candidate-role">Dep. Estadual · MG</div>
-        </div>
+  <!-- ===== TOP BAR ===== -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <a href="sinal-02-gerador-posts.html" class="back-link">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Voltar</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="topbar-breadcrumb">
+        <span>Sinal</span><span class="topbar-breadcrumb-sep">/</span>
+        <span>Conteúdo</span><span class="topbar-breadcrumb-sep">/</span>
+        <span class="current">Editor</span>
       </div>
     </div>
-  </aside>
 
-  <!-- ===== MAIN ===== -->
-  <main class="main">
-
-    <div class="breadcrumb">
-      <a>Sinal</a><span class="breadcrumb-sep">/</span>
-      <a>Conteúdo</a><span class="breadcrumb-sep">/</span>
-      <a>Gerador de Posts</a><span class="breadcrumb-sep">/</span>
-      <span class="current">Editor · Post #847</span>
-    </div>
-
-    <!-- Editor Layout -->
-    <div class="editor-layout">
-
-      <!-- =========== VARIATIONS (LEFT) =========== -->
-      <div class="variations-panel">
-        <h3 class="panel-title">Variações <em>geradas</em></h3>
-        <p class="panel-subtitle">A IA criou 4 versões treinada na sua voz. Clique para aplicar.</p>
-
-        <div class="variation-card selected">
-          <div class="variation-label">
-            <span class="variation-name">Variação A · Factual</span>
-            <span class="variation-score">voz: <strong>96%</strong></span>
-          </div>
-          <p class="variation-text">Visitei hoje o <b>Hospital de Betim</b> e acompanhei a execução da emenda de R$ 1.2M que apresentei em 2024. O novo centro cirúrgico já está funcionando. Saúde se faz com presença, não com promessa.</p>
-          <div class="variation-tags">
-            <span class="variation-tag">Factual</span>
-            <span class="variation-tag">Prova de Entrega</span>
-            <span class="variation-tag">42 palavras</span>
-          </div>
-        </div>
-
-        <div class="variation-card">
-          <div class="variation-label">
-            <span class="variation-name">Variação B · Narrativa</span>
-            <span class="variation-score">voz: <strong>92%</strong></span>
-          </div>
-          <p class="variation-text">Lembro do dia em 2024 quando protocolei essa emenda. Hoje, em Betim, vi ela virar sala cirúrgica. <b>R$ 1.2M que agora salvam vidas.</b> Política, quando funciona, é isso.</p>
-          <div class="variation-tags">
-            <span class="variation-tag">Narrativa</span>
-            <span class="variation-tag">Emocional</span>
-            <span class="variation-tag">36 palavras</span>
-          </div>
-        </div>
-
-        <div class="variation-card">
-          <div class="variation-label">
-            <span class="variation-name">Variação C · Direto</span>
-            <span class="variation-score">voz: <strong>88%</strong></span>
-          </div>
-          <p class="variation-text"><b>R$ 1.2 milhões.</b> Foi o valor da minha emenda para o Hospital de Betim. Em execução hoje. Centro cirúrgico novo, equipamento novo. O mandato tem entregue — e vai seguir entregando.</p>
-          <div class="variation-tags">
-            <span class="variation-tag">Direto</span>
-            <span class="variation-tag">Números</span>
-            <span class="variation-tag">48 palavras</span>
-          </div>
-        </div>
-
-        <div class="variation-card">
-          <div class="variation-label">
-            <span class="variation-name">Variação D · Convite</span>
-            <span class="variation-score">voz: <strong>94%</strong></span>
-          </div>
-          <p class="variation-text">Uma emenda protocolada. Dois anos de cobrança. <b>Hoje, o Hospital de Betim está com o novo centro cirúrgico rodando.</b> Se você é de Betim: conte pra gente o que ainda falta. O trabalho continua.</p>
-          <div class="variation-tags">
-            <span class="variation-tag">Convite</span>
-            <span class="variation-tag">Escuta</span>
-            <span class="variation-tag">Territorial</span>
-          </div>
-        </div>
-
-        <div class="generate-more">+ Gerar novas variações</div>
+    <div class="topbar-right">
+      <div class="save-status">
+        <span class="save-dot"></span>
+        <span>Salvo · há 2 segundos</span>
       </div>
+      <div class="topbar-divider"></div>
+      <button class="btn-context" onclick="toggleDrawer()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Contexto
+      </button>
+    </div>
+  </nav>
 
-      <!-- =========== EDITOR (CENTER) =========== -->
-      <div class="editor-panel">
+  <!-- ===== EDITOR ===== -->
+  <main class="editor">
 
-        <div class="editor-head">
+    <!-- HEADER -->
+    <header class="editor-header">
+      <div class="header-tag-row">
+        <span class="tag-pill">Trabalho parlamentar</span>
+        <span class="header-source">📊 <strong>Fonte:</strong> +Brasil · emenda #2847/2026 · paga 23/04</span>
+      </div>
+      <h1 class="editor-headline">
+        Hospital de Betim — <em>R$ 1,2 milhão</em><br>
+        que vira atendimento.
+      </h1>
+    </header>
+
+    <!-- VARIAÇÕES (4 cards) -->
+    <section class="variations-section">
+      <div class="variations-label">4 variações geradas pelo Redator</div>
+      <div class="variations-grid">
+
+        <button class="variation-card active">
+          <div class="variation-card-head">
+            <div class="variation-card-icon">📊</div>
+            <div class="variation-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
           <div>
-            <div class="editor-meta">
-              <div class="channel">
-                <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
-                Instagram · Feed
+            <div class="variation-card-label">Factual</div>
+            <p class="variation-card-preview">Hoje o Hospital Regional de Betim recebeu os R$ 1,2 milhão da emenda...</p>
+          </div>
+          <div class="variation-card-meta">Aderência 96%</div>
+        </button>
+
+        <button class="variation-card">
+          <div class="variation-card-head">
+            <div class="variation-card-icon">📖</div>
+            <div class="variation-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="variation-card-label">Narrativa</div>
+            <p class="variation-card-preview">Lembro do dia em que visitei o Hospital de Betim e a diretora me disse...</p>
+          </div>
+          <div class="variation-card-meta">Aderência 91%</div>
+        </button>
+
+        <button class="variation-card">
+          <div class="variation-card-head">
+            <div class="variation-card-icon">⚡</div>
+            <div class="variation-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="variation-card-label">Direta</div>
+            <p class="variation-card-preview">R$ 1,2 milhão. Hospital de Betim. Paga ontem. 47 mil pessoas atendidas...</p>
+          </div>
+          <div class="variation-card-meta">Aderência 88%</div>
+        </button>
+
+        <button class="variation-card">
+          <div class="variation-card-head">
+            <div class="variation-card-icon">🤝</div>
+            <div class="variation-card-check">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+          <div>
+            <div class="variation-card-label">Convite</div>
+            <p class="variation-card-preview">Quero te contar o que aconteceu hoje em Betim, e te convidar a fiscalizar...</p>
+          </div>
+          <div class="variation-card-meta">Aderência 93%</div>
+        </button>
+
+      </div>
+    </section>
+
+    <!-- EDIT AREA: thumb + editor -->
+    <section class="edit-area">
+
+      <!-- COLUNA THUMB -->
+      <div class="thumb-column">
+        <div class="column-label">Arte gerada · feed Instagram</div>
+
+        <div class="thumb">
+          <div class="thumb-header">
+            <span class="thumb-tag">Trabalho parlamentar</span>
+            <div class="thumb-mark">
+              <span class="thumb-mark-dot"></span>
+              <span>Sinal</span>
+            </div>
+          </div>
+          <div>
+            <div class="thumb-highlight">R$ 1.2<em>M</em></div>
+            <h3 class="thumb-headline">Para o <em>Hospital de<br>Betim.</em></h3>
+            <p class="thumb-sub">Emenda paga ontem. 47 mil moradores impactados.</p>
+          </div>
+          <div class="thumb-footer">
+            <div class="thumb-author">
+              <div class="thumb-avatar">MA</div>
+              <div class="thumb-author-info">
+                <span class="thumb-author-name">Marina Aguiar</span>
+                <span class="thumb-author-handle">@marinaaguiar.mg</span>
               </div>
-              <div class="dot"></div>
-              <span>Publicar hoje · 19h00</span>
-              <div class="dot"></div>
-              <span style="color: var(--caution);">Aguardando aprovação</span>
-            </div>
-            <h1 class="editor-title">Hospital de Betim — <em>R$ 1.2 milhões no papel e no concreto.</em></h1>
-          </div>
-          <div class="editor-head-actions">
-            <div class="save-status">
-              <span class="check"></span>
-              Salvo há 4s
-            </div>
-            <button class="btn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
-          </div>
-        </div>
-
-        <!-- Post Preview (Instagram-like) -->
-        <div class="post-preview">
-          <div class="post-preview-head">
-            <div class="preview-avatar">MA</div>
-            <div>
-              <div class="preview-user">marinaaguiar</div>
-              <div class="preview-user-sub">Belo Horizonte, MG</div>
-            </div>
-            <div class="preview-more">•••</div>
-          </div>
-
-          <div class="post-preview-image">
-            <div class="preview-big-num">R$1,2M</div>
-            <div class="preview-caption">Hospital de Betim. <br>Emenda executada.</div>
-            <div class="preview-sig-logo">sinal<em style="color: inherit; font-style: italic;">.ai</em></div>
-          </div>
-
-          <div class="post-preview-actions">
-            <svg class="preview-action-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <svg class="preview-action-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            <svg class="preview-action-icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            <svg class="preview-action-icon" style="margin-left: auto;" viewBox="0 0 24 24"><polygon points="19 21 12 17 5 21 5 5 19 5 19 21"/></svg>
-          </div>
-
-          <div class="post-preview-caption-block">
-            <b>marinaaguiar</b> Visitei hoje o Hospital de Betim e acompanhei a execução da emenda de R$ 1.2M que apresentei em 2024. O novo centro cirúrgico já está funcionando. <br><br>Saúde se faz com presença, não com promessa.
-          </div>
-        </div>
-
-        <!-- Text editor -->
-        <div class="text-editor">
-          <div class="text-editor-head">
-            <span class="text-editor-label">Legenda · Instagram</span>
-            <span class="text-editor-counter">186 / 2200</span>
-          </div>
-          <textarea class="text-editor-area">Visitei hoje o Hospital de Betim e acompanhei a execução da emenda de R$ 1.2M que apresentei em 2024. O novo centro cirúrgico já está funcionando.
-
-Saúde se faz com presença, não com promessa.</textarea>
-
-          <div class="hashtags">
-            <span class="hashtag">#Betim</span>
-            <span class="hashtag">#SaúdePública</span>
-            <span class="hashtag">#MandatoEmAção</span>
-            <span class="hashtag">#MinasGerais</span>
-            <span class="hashtag">+ sugerir</span>
-          </div>
-
-          <div class="text-editor-footer">
-            <div class="text-editor-inline-actions">
-              <button class="inline-btn ai">✨ Reescrever</button>
-              <button class="inline-btn">Mais curto</button>
-              <button class="inline-btn">Mais formal</button>
-              <button class="inline-btn">Emoji</button>
-            </div>
-            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--fog);">Sugerido: 19h00 (pico)</div>
-          </div>
-        </div>
-
-        <!-- Approval flow -->
-        <div class="approval-flow">
-          <div class="approval-title">Fluxo de aprovação</div>
-          <div class="approval-steps">
-            <div class="approval-step done">
-              <div class="approval-dot">✓</div>
-              <div class="approval-step-name">IA</div>
-              <div class="approval-step-sub">Gerou · 08:42</div>
-            </div>
-            <div class="approval-step done">
-              <div class="approval-dot">✓</div>
-              <div class="approval-step-name">Assessor</div>
-              <div class="approval-step-sub">Bruno · 09:14</div>
-            </div>
-            <div class="approval-step current">
-              <div class="approval-dot">3</div>
-              <div class="approval-step-name">Coordenadora</div>
-              <div class="approval-step-sub">Revisando</div>
-            </div>
-            <div class="approval-step pending">
-              <div class="approval-dot">4</div>
-              <div class="approval-step-name">Marina</div>
-              <div class="approval-step-sub">Checagem final</div>
             </div>
           </div>
         </div>
 
-        <!-- Bottom bar -->
-        <div class="bottom-bar">
-          <div class="bottom-left">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--fog)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Conteúdo gerado por IA · rotulado automaticamente
-          </div>
-          <div class="bottom-right">
-            <button class="btn"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Pedir ajuste</button>
-            <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/></svg>Agendar</button>
-            <button class="btn btn-primary"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Aprovar e enviar</button>
-          </div>
+        <div class="thumb-actions">
+          <button class="thumb-action-btn">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Regenerar arte
+          </button>
+          <button class="thumb-action-btn">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Baixar
+          </button>
         </div>
-
       </div>
 
-      <!-- =========== CONTEXT (RIGHT) =========== -->
-      <div class="context-panel">
+      <!-- COLUNA EDITOR -->
+      <div class="editor-column">
+        <div class="column-label">Texto do post · editável</div>
 
-        <!-- Source -->
-        <div class="context-card">
-          <div class="context-title">
-            <span>Fonte do dado</span>
-            <span class="live">Ao vivo</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Tipo</span>
-            <span class="v">Emenda parlamentar</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Número</span>
-            <span class="v"><strong>#2847</strong></span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Valor</span>
-            <span class="v">R$ 1.200.000</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Município</span>
-            <span class="v">Betim · MG</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Protocolada</span>
-            <span class="v">Mar · 2024</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Executada</span>
-            <span class="v" style="color: var(--positive);">Abr · 2026</span>
-          </div>
-          <div class="source-detail">
-            <span class="k">Sistema</span>
-            <span class="v" style="font-family: var(--font-mono); font-size: 11px;">+Brasil · SIOP</span>
-          </div>
-        </div>
+        <div class="editor-textarea-wrap">
+          <textarea class="editor-textarea" id="post-text">Hoje o Hospital Regional de Betim recebeu os R$ 1,2 milhão da emenda que destinei no fim de 2024. Esse valor vai equipar 3 alas, contratar 14 profissionais e atender mais 47 mil moradores da região.
 
-        <!-- Voice match -->
-        <div class="context-card">
-          <div class="context-title"><span>Aderência à voz</span><span style="color: var(--signal);">96%</span></div>
-          <div class="voice-match-bar">
-            <div class="voice-match-fill" style="width: 96%;"></div>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-bottom: 14px; letter-spacing: 0.05em;">Baseado em 247 posts anteriores</div>
-          <div class="voice-check">
-            <span class="k">Vocabulário</span>
-            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Consistente</span>
-          </div>
-          <div class="voice-check">
-            <span class="k">Tom</span>
-            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Direto · empático</span>
-          </div>
-          <div class="voice-check">
-            <span class="k">Estrutura</span>
-            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Factual + frase-síntese</span>
-          </div>
-          <div class="voice-check warn">
-            <span class="k">Bordão</span>
-            <span class="v" style="color: var(--caution);"><svg viewBox="0 0 24 24" style="stroke: var(--caution);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Sugestão: "o trabalho continua"</span>
-          </div>
-        </div>
+Quando entrei na ALMG, prometi que cada centavo teria nome, endereço e propósito. Esse aqui tem: Betim, Saúde, e a tranquilidade de quem precisa do SUS perto de casa.
 
-        <!-- Coherence -->
-        <div class="context-card">
-          <div class="context-title"><span>Coerência narrativa</span><span style="color: var(--positive);">✓ OK</span></div>
-          <p style="font-size: 12px; color: var(--mist-dim); line-height: 1.5;">Este post não contradiz nenhum posicionamento histórico seu. A pauta de saúde pública foi defendida em <strong style="color: var(--mist);">18 posts</strong>, <strong style="color: var(--mist);">3 discursos</strong> e <strong style="color: var(--mist);">1 entrevista</strong> nos últimos 12 meses.</p>
-        </div>
+Obrigada à equipe do hospital, à Secretaria de Saúde, e principalmente a vocês, que cobram, fiscalizam e fazem isso tudo acontecer. Bora pra mais.</textarea>
 
-        <!-- Engagement Prediction -->
-        <div class="context-card">
-          <div class="context-title"><span>Previsão de performance</span></div>
-          <div class="pred-grid">
-            <div class="pred-cell">
-              <div class="pred-val good">7.2K</div>
-              <div class="pred-label">Alcance</div>
+          <div class="editor-toolbar">
+            <div class="editor-toolbar-left">
+              <button class="toolbar-btn" title="Negrito"><b>B</b></button>
+              <button class="toolbar-btn" title="Itálico"><i>I</i></button>
+              <div class="toolbar-divider"></div>
+              <button class="toolbar-btn" title="Lista">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
+              <button class="toolbar-btn" title="Link">
+                <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </button>
+              <div class="toolbar-divider"></div>
+              <button class="toolbar-btn" title="Regenerar">
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </button>
             </div>
-            <div class="pred-cell">
-              <div class="pred-val">9.4%</div>
-              <div class="pred-label">Engaj. estim.</div>
-            </div>
-            <div class="pred-cell">
-              <div class="pred-val">184</div>
-              <div class="pred-label">Salvamentos</div>
-            </div>
-            <div class="pred-cell">
-              <div class="pred-val">32</div>
-              <div class="pred-label">Compart.</div>
+            <div class="editor-stats">
+              <span><strong>487</strong> caracteres</span>
+              <span style="color: var(--fog-softer);">·</span>
+              <span><strong>76</strong> palavras</span>
+              <span style="color: var(--fog-softer);">·</span>
+              <span class="ok">✓ dentro do limite</span>
             </div>
           </div>
-          <p style="font-size: 11px; color: var(--fog); margin-top: 10px; line-height: 1.5;">Acima da sua média (6.1%). Horário de pico · pauta quente local.</p>
         </div>
 
-        <!-- Compliance -->
-        <div class="compliance-inline">
-          <div class="compliance-inline-head">
-            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Compliance TSE · 2026</span>
+        <!-- HASHTAGS -->
+        <div class="hashtags-section">
+          <div class="hashtags-label">Hashtags sugeridas pela IA</div>
+          <div class="hashtags-list">
+            <span class="hashtag-chip">
+              #Betim
+              <span class="hashtag-chip-x">×</span>
+            </span>
+            <span class="hashtag-chip">
+              #SaúdePública
+              <span class="hashtag-chip-x">×</span>
+            </span>
+            <span class="hashtag-chip">
+              #SUS
+              <span class="hashtag-chip-x">×</span>
+            </span>
+            <span class="hashtag-chip">
+              #MandatoQueEntrega
+              <span class="hashtag-chip-x">×</span>
+            </span>
+            <button class="hashtag-add">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Sugerir mais
+            </button>
           </div>
-          <p>Conteúdo será publicado com rótulo automático <code>gerado-com-ia</code> conforme Resolução TSE. Log auditável registrado em <code>#LOG-2847-A</code>.</p>
         </div>
-
       </div>
 
-    </div>
+    </section>
+
+    <!-- ACTION BAR -->
+    <footer class="action-bar">
+      <div class="metrics-row">
+        <div class="metric-item">
+          <span class="metric-label">Aderência</span>
+          <span class="metric-value">96<em>%</em></span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-label">Engajamento</span>
+          <span class="metric-value">8.4<em>k</em></span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-label">Compliance</span>
+          <span class="metric-value-text">✓ Aprovado</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-label">Janela ótima</span>
+          <span class="metric-value">11h<em>30</em></span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-secondary">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Programar
+        </button>
+        <button class="btn-primary">
+          Publicar agora
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </footer>
 
   </main>
 
-</div>
+  <!-- ===== CONTEXT DRAWER ===== -->
+  <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <h2 class="drawer-title">Contexto<em>.</em></h2>
+      <button class="drawer-close" onclick="toggleDrawer()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+
+      <div class="drawer-section">
+        <div class="drawer-section-label">Fonte do dado</div>
+        <div class="drawer-data-row">
+          <span class="key">Origem</span>
+          <span class="value">Portal +Brasil</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Emenda</span>
+          <span class="value">#2847/2026</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Status</span>
+          <span class="value">Executada · 23/04/2026</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Município</span>
+          <span class="value">Betim · MG</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Valor</span>
+          <span class="value">R$ 1.200.000,00</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Beneficiário</span>
+          <span class="value">Hospital Regional</span>
+        </div>
+        <div class="drawer-data-row">
+          <span class="key">Cruzamento</span>
+          <span class="value">SIOP + SES-MG ✓</span>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-label">Comentários da equipe</div>
+
+        <div class="drawer-comment">
+          <div class="drawer-comment-author">
+            <div class="drawer-comment-avatar">AC</div>
+            <span>Ana Caldeira</span>
+            <span class="drawer-comment-time">há 12min</span>
+          </div>
+          <p class="drawer-comment-text">Acho que a Marina pode citar o nome da diretora do hospital — ela falou bem dela na visita. Ganha pessoalidade.</p>
+        </div>
+
+        <div class="drawer-comment">
+          <div class="drawer-comment-author">
+            <div class="drawer-comment-avatar">BT</div>
+            <span>Bruno Teixeira</span>
+            <span class="drawer-comment-time">há 8min</span>
+          </div>
+          <p class="drawer-comment-text">Concordo com a Ana. E sugiro publicar 11h30 mesmo, depois do almoço pega menos engajamento.</p>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-label">Histórico de versões</div>
+
+        <div class="drawer-version">
+          <div class="drawer-version-info">
+            <span class="drawer-version-author">Marina Aguiar</span>
+            <span class="drawer-version-meta">Editou 2 frases · ajuste de tom</span>
+          </div>
+          <span class="drawer-version-time">há 2min</span>
+        </div>
+
+        <div class="drawer-version">
+          <div class="drawer-version-info">
+            <span class="drawer-version-author">Ana Caldeira</span>
+            <span class="drawer-version-meta">Adicionou hashtag #MandatoQueEntrega</span>
+          </div>
+          <span class="drawer-version-time">há 14min</span>
+        </div>
+
+        <div class="drawer-version">
+          <div class="drawer-version-info">
+            <span class="drawer-version-author">Sinal · Redator</span>
+            <span class="drawer-version-meta">Geração inicial · 4 variações</span>
+          </div>
+          <span class="drawer-version-time">há 32min</span>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+<script>
+  function toggleDrawer() {
+    document.getElementById('drawer').classList.toggle('open');
+    document.getElementById('drawer-overlay').classList.toggle('open');
+  }
+
+  // Variation card switching (visual only)
+  document.querySelectorAll('.variation-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.variation-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    });
+  });
+</script>
 
 </body>
 </html>
