@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sinal.ai — Conteúdo · Gerador de Posts</title>
+<title>Sinal.ai — Gerador de Posts</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,12 +23,24 @@
   --signal: #C5F24A;
   --signal-dim: #97B938;
   --signal-glow: rgba(197, 242, 74, 0.12);
+  --signal-glow-strong: rgba(197, 242, 74, 0.2);
   --positive: #6DD67D;
   --caution: #F4C544;
   --negative: #F05D5E;
   --info: #7FA8E8;
   --border: rgba(237, 237, 233, 0.06);
-  --border-hover: rgba(237, 237, 233, 0.12);
+  --border-hover: rgba(237, 237, 233, 0.14);
+
+  /* Cores das categorias */
+  --cat-parlamentar-1: #2E5141;
+  --cat-parlamentar-2: #C5F24A;
+  --cat-trending-1: #5C3D1E;
+  --cat-trending-2: #F4C544;
+  --cat-agenda-1: #2D3E5E;
+  --cat-agenda-2: #7FA8E8;
+  --cat-efemeride-1: #4A2D4F;
+  --cat-efemeride-2: #C9A0DC;
+
   --font-display: 'Instrument Serif', serif;
   --font-body: 'Geist', -apple-system, sans-serif;
   --font-mono: 'Geist Mono', monospace;
@@ -38,9 +50,12 @@
 html, body { background: var(--ink); color: var(--mist); font-family: var(--font-body); -webkit-font-smoothing: antialiased; letter-spacing: -0.01em; }
 body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E"); opacity: 0.025; pointer-events: none; z-index: 100; mix-blend-mode: overlay; }
 
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
 .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 
-/* ===== SIDEBAR ===== */
+/* SIDEBAR */
 .sidebar { background: var(--ink); border-right: 1px solid var(--border); padding: 24px 16px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
 .logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px 24px 12px; margin-bottom: 8px; }
 .logo-mark { position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
@@ -54,7 +69,7 @@ body::before { content: ''; position: fixed; inset: 0; background-image: url("da
 
 .nav-section { margin-bottom: 24px; }
 .nav-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog-soft); padding: 0 12px; margin-bottom: 8px; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; transition: all 0.15s ease; margin-bottom: 2px; position: relative; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--mist-dim); cursor: pointer; margin-bottom: 2px; position: relative; transition: all 0.15s ease; }
 .nav-item:hover { background: var(--ink-soft); color: var(--mist); }
 .nav-item.active { background: var(--ink-soft); color: var(--mist); }
 .nav-item.active::before { content: ''; position: absolute; left: -16px; top: 50%; transform: translateY(-50%); width: 3px; height: 16px; background: var(--signal); border-radius: 0 2px 2px 0; }
@@ -63,176 +78,489 @@ body::before { content: ''; position: fixed; inset: 0; background-image: url("da
 .nav-badge.alt { background: var(--signal); color: var(--ink); }
 
 .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
-.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); cursor: pointer; transition: background 0.15s ease; }
-.candidate-badge:hover { background: var(--ink-softer); }
-.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; flex-shrink: 0; }
-.candidate-info { flex: 1; min-width: 0; }
+.candidate-badge { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--ink-soft); }
+.candidate-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--signal), var(--signal-dim)); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; color: var(--ink); font-weight: 600; }
 .candidate-name { font-size: 13px; font-weight: 500; color: var(--mist); }
 .candidate-role { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
-.candidate-chevron { color: var(--fog); width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.5; }
 
-/* ===== MAIN ===== */
-.main { padding: 28px 40px 48px; max-width: 1400px; width: 100%; }
+/* MAIN */
+.main { padding: 28px 56px 96px; max-width: 1320px; width: 100%; margin: 0 auto; }
 
-/* Breadcrumb */
 .breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); margin-bottom: 14px; }
 .breadcrumb .current { color: var(--signal); }
 .breadcrumb-sep { color: var(--fog-softer); }
 
-.main-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-.header-title { font-family: var(--font-display); font-size: 44px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
-.header-title em { font-style: italic; color: var(--signal); }
-.header-subtitle { font-size: 14px; color: var(--fog); margin-top: 10px; max-width: 560px; line-height: 1.5; }
-
-.header-actions { display: flex; gap: 10px; align-items: center; }
-.btn { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s ease; border: 1px solid var(--border); background: var(--ink-soft); color: var(--mist); }
-.btn:hover { border-color: var(--border-hover); background: var(--ink-softer); }
-.btn-primary { background: var(--signal); color: var(--ink); border-color: var(--signal); font-weight: 600; }
-.btn-primary:hover { background: var(--signal-dim); border-color: var(--signal-dim); }
-.btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-/* ===== FILTERS BAR ===== */
-.filters-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 12px 16px; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; }
-.filters-left { display: flex; gap: 6px; align-items: center; }
-.filter-chip { font-family: var(--font-body); font-size: 12px; font-weight: 500; padding: 7px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s ease; border: 1px solid transparent; color: var(--fog); background: transparent; }
-.filter-chip:hover { color: var(--mist); }
-.filter-chip.active { background: var(--ink); color: var(--mist); border-color: var(--border-hover); }
-.filter-chip .count { font-family: var(--font-mono); color: var(--fog-soft); margin-left: 6px; font-size: 11px; }
-.filter-chip.active .count { color: var(--signal); }
-
-.filters-right { display: flex; gap: 8px; align-items: center; }
-.search-input { background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px 7px 32px; font-family: var(--font-body); font-size: 12px; color: var(--mist); width: 200px; position: relative; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A8A86' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: 10px center; }
-.search-input::placeholder { color: var(--fog-soft); }
-.search-input:focus { outline: none; border-color: var(--signal); }
-
-.view-toggle { display: flex; background: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-.view-btn { padding: 5px 10px; border-radius: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--fog); cursor: pointer; background: transparent; border: none; letter-spacing: 0.08em; text-transform: uppercase; }
-.view-btn.active { background: var(--ink-softer); color: var(--mist); }
-
-/* ===== KPI STRIP ===== */
-.kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.kpi { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
-.kpi-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 10px; }
-.kpi-value { font-family: var(--font-display); font-size: 40px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); }
-.kpi-delta { font-family: var(--font-mono); font-size: 11px; margin-top: 6px; color: var(--positive); }
-
-/* ===== CONTENT LAYOUT ===== */
-.content-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
-
-/* ===== POSTS LIST ===== */
-.posts-section { display: flex; flex-direction: column; gap: 12px; }
-
-.section-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.section-heading h2 { font-family: var(--font-display); font-size: 24px; letter-spacing: -0.02em; color: var(--mist); font-weight: 400; }
-.section-heading h2 em { font-style: italic; color: var(--signal); }
-.section-heading .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.05em; }
-
-.source-group { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color 0.2s ease; }
-.source-group:hover { border-color: var(--border-hover); }
-
-.source-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
-.source-header-left { display: flex; align-items: center; gap: 14px; }
-.source-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--ink); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); flex-shrink: 0; }
-.source-icon svg { width: 16px; height: 16px; stroke: var(--signal); fill: none; stroke-width: 1.5; }
-.source-info { display: flex; flex-direction: column; }
-.source-title { font-size: 14px; color: var(--mist); font-weight: 500; margin-bottom: 2px; }
-.source-title strong { color: var(--signal); font-weight: 500; }
-.source-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.05em; text-transform: uppercase; }
-.source-header-right { display: flex; gap: 8px; align-items: center; }
-.source-count { font-family: var(--font-mono); font-size: 11px; color: var(--fog); padding: 4px 10px; background: var(--ink); border-radius: 100px; }
-
-.posts-grid { padding: 16px 20px 20px 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-.post-card { background: var(--ink-softer); border: 1px solid var(--border); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.15s ease; display: flex; flex-direction: column; gap: 12px; position: relative; }
-.post-card:hover { border-color: var(--signal); background: var(--ink-hover); transform: translateY(-1px); }
-
-.post-card-head { display: flex; justify-content: space-between; align-items: center; }
-.channel-chip { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--signal); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
-.channel-chip svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.5; }
-
-.status-dot { width: 8px; height: 8px; border-radius: 50%; }
-.status-dot.waiting { background: var(--caution); }
-.status-dot.approved { background: var(--positive); }
-.status-dot.draft { background: var(--fog); }
-
-.post-preview { font-size: 13px; color: var(--mist); line-height: 1.45; min-height: 60px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.post-preview strong { color: var(--signal); font-weight: 500; }
-
-.post-card-visual { background: var(--ink); border-radius: 6px; height: 110px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-.post-card-visual.gradient-1 { background: linear-gradient(135deg, var(--signal) 0%, var(--signal-dim) 100%); }
-.post-card-visual.gradient-2 { background: linear-gradient(135deg, var(--ink-softer) 0%, var(--ink-soft) 100%); border: 1px solid var(--border); }
-.post-card-visual.video::after { content: '▶'; position: absolute; color: var(--mist); font-size: 32px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
-
-.post-card-visual .visual-number { font-family: var(--font-display); font-size: 48px; line-height: 1; letter-spacing: -0.03em; color: var(--ink); }
-.post-card-visual .visual-label { position: absolute; bottom: 8px; left: 10px; font-family: var(--font-mono); font-size: 9px; color: var(--ink); opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; }
-
-.post-card-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
-.post-card-foot-left { display: flex; gap: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--fog); }
-.post-card-foot-left span { display: flex; align-items: center; gap: 4px; }
-.post-card-foot .cta { font-family: var(--font-body); font-size: 11px; color: var(--mist); font-weight: 500; display: flex; align-items: center; gap: 4px; }
-
-/* ===== SIDEBAR RIGHT: ACTIVITY ===== */
-.right-rail { display: flex; flex-direction: column; gap: 16px; }
-
-.rail-card { background: var(--ink-soft); border: 1px solid var(--border); border-radius: 14px; padding: 20px; }
-
-.rail-card-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-
-/* Today's Sources */
-.sources-list { display: flex; flex-direction: column; gap: 10px; }
-.source-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--border); }
-.source-item:first-child { border-top: none; padding-top: 0; }
-.source-item-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-.source-item-dot.emenda { background: var(--signal); }
-.source-item-dot.visita { background: var(--info); }
-.source-item-dot.efemeride { background: var(--caution); }
-.source-item-dot.provasocial { background: var(--positive); }
-.source-item-content { flex: 1; }
-.source-item-title { font-size: 13px; color: var(--mist); font-weight: 500; line-height: 1.3; margin-bottom: 2px; }
-.source-item-meta { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.03em; }
-
-/* Voice Training */
-.voice-card { background: var(--ink); border: 1px solid var(--signal); border-radius: 14px; padding: 20px; position: relative; overflow: hidden; }
-.voice-card::before { content: ''; position: absolute; top: -30%; right: -30%; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, var(--signal-glow) 0%, transparent 70%); pointer-events: none; }
-.voice-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.voice-label .live-dot { width: 6px; height: 6px; background: var(--signal); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--signal); }
+/* HEADER */
+.page-header { padding-bottom: 28px; border-bottom: 1px solid var(--border); margin-bottom: 64px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; }
+.page-header-left { flex: 1; min-width: 280px; }
+.page-title { font-family: var(--font-display); font-size: 56px; line-height: 1; letter-spacing: -0.03em; color: var(--mist); margin-bottom: 14px; }
+.page-title em { font-style: italic; color: var(--signal); }
+.page-meta { display: flex; align-items: center; gap: 20px; font-size: 13px; color: var(--fog); flex-wrap: wrap; }
+.page-meta-item { display: flex; align-items: center; gap: 8px; }
+.live-dot { width: 6px; height: 6px; background: var(--positive); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 8px var(--positive); }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-.voice-title { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; color: var(--mist); line-height: 1.2; margin-bottom: 10px; position: relative; z-index: 1; }
-.voice-title em { font-style: italic; color: var(--signal); }
-.voice-desc { font-size: 12px; color: var(--mist-dim); line-height: 1.5; margin-bottom: 14px; position: relative; z-index: 1; }
-.voice-metrics { display: flex; gap: 12px; margin-bottom: 12px; position: relative; z-index: 1; }
-.voice-metric { flex: 1; }
-.voice-metric-val { font-family: var(--font-display); font-size: 24px; color: var(--signal); line-height: 1; letter-spacing: -0.02em; }
-.voice-metric-label { font-family: var(--font-mono); font-size: 9px; color: var(--fog); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.08em; }
+.page-meta strong { color: var(--mist-dim); font-weight: 500; }
 
-/* Coherence */
-.coherence-card { }
-.coherence-bar-wrap { margin-top: 8px; }
-.coherence-label-row { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; margin-bottom: 6px; }
-.coherence-label-row .val { color: var(--positive); font-weight: 600; }
-.coherence-bar { height: 6px; background: var(--ink); border-radius: 3px; overflow: hidden; }
-.coherence-fill { height: 100%; background: linear-gradient(90deg, var(--signal-dim), var(--positive)); border-radius: 3px; }
-.coherence-note { font-size: 11px; color: var(--fog); line-height: 1.4; margin-top: 10px; }
+.page-header-right { display: flex; align-items: center; gap: 10px; }
 
-/* Compliance Status */
-.compliance-row { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px; padding: 10px 0; border-top: 1px solid var(--border); }
-.compliance-row:first-of-type { border-top: none; }
-.compliance-row .k { color: var(--fog); }
-.compliance-row .v { color: var(--mist); display: flex; align-items: center; gap: 6px; }
-.compliance-row .v svg { width: 12px; height: 12px; stroke: var(--positive); fill: none; stroke-width: 2; }
+.btn-icon-text { background: var(--ink-soft); color: var(--mist); padding: 10px 16px; border-radius: 9px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); transition: all 0.15s ease; }
+.btn-icon-text:hover { border-color: var(--border-hover); }
+.btn-icon-text svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-@media (max-width: 1200px) {
-  .content-layout { grid-template-columns: 1fr; }
-  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
-  .posts-grid { grid-template-columns: repeat(2, 1fr); }
+.btn-primary { background: var(--signal); color: var(--ink); padding: 14px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 10px; transition: all 0.15s ease; box-shadow: 0 4px 16px var(--signal-glow); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--signal-glow-strong); }
+
+.btn-secondary { background: transparent; color: var(--mist); padding: 12px 20px; border: 1px solid var(--border-hover); border-radius: 10px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: all 0.15s ease; }
+.btn-secondary:hover { border-color: var(--mist-dim); }
+
+.btn-ghost { background: transparent; color: var(--fog); padding: 12px 16px; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: color 0.15s ease; }
+.btn-ghost:hover { color: var(--mist); }
+
+/* FILTROS */
+.filters-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 56px; flex-wrap: wrap; }
+.filter-tabs { display: flex; gap: 4px; padding: 4px; background: var(--ink-soft); border-radius: 10px; flex-wrap: wrap; }
+.filter-tab { padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--fog); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 8px; }
+.filter-tab:hover { color: var(--mist-dim); }
+.filter-tab.active { background: var(--ink); color: var(--mist); }
+.filter-tab-count { font-family: var(--font-mono); font-size: 11px; background: var(--ink-softer); padding: 2px 7px; border-radius: 4px; color: var(--fog); }
+.filter-tab.active .filter-tab-count { background: var(--signal-glow); color: var(--signal); }
+.filter-divider { width: 1px; height: 28px; background: var(--border); }
+.filter-chip { padding: 8px 14px; background: var(--ink-soft); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--mist-dim); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
+.filter-chip:hover { border-color: var(--border-hover); }
+.filter-chip svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ============ THUMB EDITORIAL (a magia visual) ============ */
+.thumb {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  isolation: isolate;
+}
+
+/* Aspect ratios diferentes por contexto */
+.thumb.thumb-hero { aspect-ratio: 4/5; min-height: 480px; }
+.thumb.thumb-medium { aspect-ratio: 1/1; }
+.thumb.thumb-compact { aspect-ratio: 4/5; min-height: 240px; padding: 18px; }
+
+/* Categorias - cada uma tem gradiente próprio */
+.thumb-parlamentar {
+  background: linear-gradient(135deg, var(--cat-parlamentar-1) 0%, #1A332A 80%);
+}
+.thumb-parlamentar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(197, 242, 74, 0.18), transparent 50%);
+  z-index: 0;
+}
+
+.thumb-trending {
+  background: linear-gradient(135deg, var(--cat-trending-1) 0%, #2E1F0F 80%);
+}
+.thumb-trending::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(244, 197, 68, 0.18), transparent 50%);
+  z-index: 0;
+}
+
+.thumb-agenda {
+  background: linear-gradient(135deg, var(--cat-agenda-1) 0%, #16223A 80%);
+}
+.thumb-agenda::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(127, 168, 232, 0.18), transparent 50%);
+  z-index: 0;
+}
+
+.thumb-efemeride {
+  background: linear-gradient(135deg, var(--cat-efemeride-1) 0%, #2A1A2E 80%);
+}
+.thumb-efemeride::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(201, 160, 220, 0.18), transparent 50%);
+  z-index: 0;
+}
+
+.thumb > * { position: relative; z-index: 1; }
+
+/* Header da thumb */
+.thumb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.thumb-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.thumb-parlamentar .thumb-tag { color: var(--cat-parlamentar-2); }
+.thumb-trending .thumb-tag { color: var(--cat-trending-2); }
+.thumb-agenda .thumb-tag { color: var(--cat-agenda-2); }
+.thumb-efemeride .thumb-tag { color: var(--cat-efemeride-2); }
+
+.thumb-mark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+.thumb-mark-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+.thumb-parlamentar .thumb-mark-dot { background: var(--cat-parlamentar-2); }
+.thumb-trending .thumb-mark-dot { background: var(--cat-trending-2); }
+.thumb-agenda .thumb-mark-dot { background: var(--cat-agenda-2); }
+.thumb-efemeride .thumb-mark-dot { background: var(--cat-efemeride-2); }
+
+/* Big number/highlight (R$ 1.2M, 47 votos, etc) */
+.thumb-highlight {
+  font-family: var(--font-display);
+  font-style: italic;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  color: rgba(255,255,255,0.95);
+  margin-bottom: 14px;
+}
+.thumb-hero .thumb-highlight { font-size: 88px; }
+.thumb-medium .thumb-highlight { font-size: 56px; }
+.thumb-compact .thumb-highlight { font-size: 38px; }
+
+.thumb-parlamentar .thumb-highlight { color: var(--cat-parlamentar-2); }
+.thumb-trending .thumb-highlight { color: var(--cat-trending-2); }
+.thumb-agenda .thumb-highlight { color: var(--cat-agenda-2); }
+.thumb-efemeride .thumb-highlight { color: var(--cat-efemeride-2); }
+
+/* Headline editorial */
+.thumb-headline {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--mist);
+  font-weight: 400;
+  max-width: 92%;
+}
+.thumb-hero .thumb-headline { font-size: 36px; margin-bottom: 8px; }
+.thumb-medium .thumb-headline { font-size: 26px; margin-bottom: 6px; }
+.thumb-compact .thumb-headline { font-size: 18px; margin-bottom: 4px; }
+
+.thumb-headline em { font-style: italic; }
+.thumb-parlamentar .thumb-headline em { color: var(--cat-parlamentar-2); }
+.thumb-trending .thumb-headline em { color: var(--cat-trending-2); }
+.thumb-agenda .thumb-headline em { color: var(--cat-agenda-2); }
+.thumb-efemeride .thumb-headline em { color: var(--cat-efemeride-2); }
+
+/* Sub legenda da thumb */
+.thumb-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(237,237,233,0.7);
+  font-weight: 300;
+  line-height: 1.4;
+  max-width: 90%;
+}
+.thumb-compact .thumb-sub { font-size: 11px; }
+
+/* Footer da thumb */
+.thumb-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.thumb-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thumb-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--mist);
+  font-weight: 600;
+}
+.thumb-compact .thumb-avatar { width: 22px; height: 22px; font-size: 10px; }
+
+.thumb-author-info {
+  display: flex;
+  flex-direction: column;
+}
+.thumb-author-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+}
+.thumb-compact .thumb-author-name { font-size: 10px; }
+.thumb-author-handle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.04em;
+}
+
+/* HERO */
+.hero-post-section { margin-bottom: 96px; }
+
+.hero-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--signal); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+.hero-eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--signal); }
+
+.hero-post-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--signal);
+  border-radius: 20px;
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 360px 1fr 280px;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.hero-post-thumb-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-post-thumb-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal-dim);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-post-thumb-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.hero-post-main { min-width: 0; display: flex; flex-direction: column; }
+
+.hero-post-meta-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+
+.hero-post-source { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.04em; display: flex; align-items: center; gap: 6px; }
+.hero-post-source strong { color: var(--mist-dim); font-weight: 500; }
+
+.hero-post-headline {
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--mist);
+  margin-bottom: 22px;
+  font-weight: 400;
+}
+.hero-post-headline em { font-style: italic; color: var(--signal); }
+
+.hero-post-body {
+  background: var(--ink);
+  border-radius: 12px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  position: relative;
+  border: 1px solid var(--border);
+  flex: 1;
+}
+
+.hero-post-body::before {
+  content: 'TEXTO DO POST';
+  position: absolute;
+  top: -8px;
+  left: 22px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  background: var(--ink-soft);
+  padding: 0 10px;
+  color: var(--signal-dim);
+  font-weight: 600;
+}
+
+.hero-post-text { font-family: var(--font-body); font-size: 14.5px; line-height: 1.65; color: var(--mist); font-weight: 300; letter-spacing: -0.005em; }
+.hero-post-text strong { color: var(--mist); font-weight: 500; }
+.hero-post-hashtags { margin-top: 14px; font-size: 13px; color: var(--info); font-weight: 400; }
+
+.hero-post-variations { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+.variation-chip { padding: 8px 14px; background: var(--ink); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--fog); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
+.variation-chip:hover { border-color: var(--border-hover); color: var(--mist-dim); }
+.variation-chip.active { background: var(--signal-glow); border-color: transparent; color: var(--signal); }
+
+.hero-post-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* SIDEBAR DO POST */
+.hero-post-side { display: flex; flex-direction: column; gap: 20px; padding-left: 28px; border-left: 1px solid var(--border); }
+.side-block { display: flex; flex-direction: column; gap: 6px; }
+.side-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fog); }
+.side-value { font-family: var(--font-display); font-size: 26px; line-height: 1; color: var(--mist); letter-spacing: -0.02em; }
+.side-value em { font-style: italic; color: var(--signal); font-size: 18px; }
+.side-meter { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.side-meter-bar { flex: 1; height: 4px; background: var(--ink); border-radius: 2px; overflow: hidden; }
+.side-meter-fill { height: 100%; background: linear-gradient(90deg, var(--signal-dim), var(--signal)); border-radius: 2px; }
+.side-channels { display: flex; gap: 6px; flex-wrap: wrap; }
+.channel-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--ink); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; color: var(--mist-dim); }
+.side-divider { height: 1px; background: var(--border); }
+
+/* SECTION DIVIDERS */
+.section-divider { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 16px; }
+.section-title { font-family: var(--font-display); font-size: 36px; line-height: 1.1; letter-spacing: -0.02em; color: var(--mist); font-weight: 400; }
+.section-title em { font-style: italic; color: var(--signal); }
+.section-meta { font-family: var(--font-mono); font-size: 11px; color: var(--fog); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* DOBRA 2 — TOP 3 */
+.priority-posts-section { margin-bottom: 96px; }
+.priority-posts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.post-card {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.post-card:hover { border-color: var(--border-hover); transform: translateY(-3px); box-shadow: 0 16px 40px rgba(0,0,0,0.3); }
+
+.post-card-content { padding: 22px; display: flex; flex-direction: column; flex: 1; }
+
+.post-card-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+
+.post-card-source { font-family: var(--font-mono); font-size: 10px; color: var(--fog); letter-spacing: 0.04em; }
+
+.post-card-headline {
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.25;
+  color: var(--mist);
+  letter-spacing: -0.015em;
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+.post-card-headline em { font-style: italic; color: var(--signal); }
+
+.post-card-body { background: var(--ink); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; flex: 1; }
+.post-card-text { font-size: 13px; line-height: 1.55; color: var(--mist-dim); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; font-weight: 300; }
+.post-card-text strong { color: var(--mist); font-weight: 500; }
+.post-card-hashtags { margin-top: 10px; font-size: 11.5px; color: var(--info); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+.post-card-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--border); margin-bottom: 12px; }
+.post-card-stat { display: flex; flex-direction: column; gap: 2px; }
+.post-card-stat-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fog); }
+.post-card-stat-value { font-family: var(--font-display); font-size: 17px; color: var(--mist); line-height: 1; letter-spacing: -0.02em; }
+.post-card-stat-value em { font-style: italic; color: var(--signal); font-size: 12px; }
+
+.post-card-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.post-card-channels { display: flex; gap: 4px; }
+.channel-mini { width: 26px; height: 26px; border-radius: 6px; background: var(--ink); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+
+.btn-card { background: transparent; color: var(--signal); padding: 8px 14px; border: 1px solid var(--signal-glow); border-radius: 8px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
+.btn-card:hover { background: var(--signal-glow); }
+.btn-card svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* DOBRA 3 — GRID compacto */
+.all-posts-section { margin-bottom: 80px; }
+.all-posts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.post-card-compact-wrap {
+  background: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 240px;
+}
+.post-card-compact-wrap:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+
+.post-card-compact-content { padding: 20px; display: flex; flex-direction: column; min-width: 0; }
+.post-card-compact-content .post-card-meta { margin-bottom: 12px; }
+.post-card-compact-content .post-card-headline { font-size: 16px; margin-bottom: 10px; line-height: 1.25; }
+.post-card-compact-content .post-card-body { padding: 12px 14px; margin-bottom: 12px; }
+.post-card-compact-content .post-card-text { font-size: 12.5px; -webkit-line-clamp: 4; }
+.post-card-compact-content .post-card-stats { padding: 8px 0; margin-bottom: 10px; gap: 8px; }
+.post-card-compact-content .post-card-stat-value { font-size: 15px; }
+.post-card-compact-content .post-card-hashtags { font-size: 11px; }
+
+/* CTA FINAL */
+.see-more-row { display: flex; justify-content: center; margin-top: 32px; padding-top: 24px; }
+.btn-see-more { background: var(--ink-soft); color: var(--mist); padding: 14px 32px; border: 1px solid var(--border-hover); border-radius: 12px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 10px; transition: all 0.2s ease; }
+.btn-see-more:hover { background: var(--ink-hover); border-color: var(--mist-dim); }
+.btn-see-more svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* Tags coloridas */
+.post-card-tag { font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; border: 1px solid transparent; }
+.post-card-tag.parlamentar { background: rgba(197, 242, 74, 0.12); color: var(--signal); }
+.post-card-tag.trending { background: rgba(244, 197, 68, 0.12); color: var(--caution); }
+.post-card-tag.agenda { background: rgba(127, 168, 232, 0.12); color: var(--info); }
+.post-card-tag.efemeride { background: rgba(201, 160, 220, 0.14); color: #C9A0DC; }
+
+.hero-post-tag { font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 5px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; background: var(--signal-glow); color: var(--signal); }
+
+@media (max-width: 1280px) {
+  .hero-post-card { grid-template-columns: 320px 1fr; }
+  .hero-post-side { grid-column: 1 / -1; padding-left: 0; padding-top: 24px; border-left: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; }
+  .side-block { flex: 1; min-width: 140px; }
+  .side-divider { display: none; }
+}
+@media (max-width: 1100px) {
+  .priority-posts-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
-  .main { padding: 24px 16px; }
-  .posts-grid { grid-template-columns: 1fr; }
-  .kpi-strip { grid-template-columns: 1fr 1fr; }
-  .filters-bar { flex-direction: column; gap: 10px; align-items: stretch; }
+  .main { padding: 24px 20px 80px; }
+  .page-title { font-size: 40px; }
+  .hero-post-headline { font-size: 24px; }
+  .hero-post-card { grid-template-columns: 1fr; padding: 24px; }
+  .priority-posts-grid { grid-template-columns: 1fr; }
+  .all-posts-grid { grid-template-columns: 1fr; }
+  .post-card-compact-wrap { grid-template-columns: 1fr; }
+  .section-title { font-size: 28px; }
+  .thumb-hero .thumb-highlight { font-size: 64px; }
+  .thumb-hero .thumb-headline { font-size: 26px; }
 }
 </style>
 </head>
@@ -240,469 +568,811 @@ body::before { content: ''; position: fixed; inset: 0; background-image: url("da
 
 <div class="app">
 
-  <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar">
-    <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+    <a href="index.html" class="logo">
       <div class="logo-mark">
         <div class="logo-ring r1"></div>
         <div class="logo-ring r2"></div>
         <div class="logo-dot"></div>
       </div>
-      <div class="logo-text">sinal<em>.ai</em></div></a>
+      <div class="logo-text">sinal<em>.ai</em></div>
+    </a>
 
     <div class="nav-section">
       <div class="nav-label">Operação</div>
-      <a href="sinal-01-dashboard.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
-      <a href="sinal-02-gerador-posts.html" class="nav-item active" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></a>
-      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
-      <a href="sinal-07-jornal-diario.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
-      <a href="#" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>Territorial</a>
+      <a href="sinal-01-dashboard.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</a>
+      <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Conteúdo<span class="nav-badge alt">23</span></div>
+      <a href="sinal-06-atendimento-whatsapp.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>Atendimento<span class="nav-badge">12</span></a>
+      <a href="sinal-07-jornal-diario.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Jornal Diário</a>
     </div>
 
     <div class="nav-section">
       <div class="nav-label">Inteligência</div>
-      <a href="sinal-08-escuta-social.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
-      <a href="sinal-09-fake-news.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Fake News<span class="nav-badge">1</span></a>
-      <a href="sinal-10-adversarios.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
+      <a href="sinal-08-escuta-social.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="8"/></svg>Escuta Social</a>
+      <a href="sinal-09-fake-news.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Fake News<span class="nav-badge">1</span></a>
+      <a href="sinal-10-adversarios.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>Adversários</a>
     </div>
 
     <div class="nav-section">
-      <div class="nav-label">Governança</div>
-      <a href="sinal-11-compliance.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
-      <a href="sinal-13-configuracoes.html" class="nav-item" style="text-decoration: none;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Ajustes</a>
+      <div class="nav-label">Sistema</div>
+      <a href="sinal-14-agentes.html" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/><path d="M1 12h6m6 0h6"/></svg>Agentes<span class="nav-badge alt">11</span></a>
+      <a href="sinal-11-compliance.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Compliance</a>
+      <a href="sinal-13-configuracoes.html" class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Configurações</a>
     </div>
 
     <div class="sidebar-footer">
       <div class="candidate-badge">
         <div class="candidate-avatar">MA</div>
-        <div class="candidate-info">
+        <div>
           <div class="candidate-name">Marina Aguiar</div>
           <div class="candidate-role">Dep. Estadual · MG</div>
         </div>
-        <svg class="candidate-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
   </aside>
 
-  <!-- ===== MAIN ===== -->
   <main class="main">
 
     <div class="breadcrumb">
       <span>Sinal</span><span class="breadcrumb-sep">/</span>
-      <span>Conteúdo</span><span class="breadcrumb-sep">/</span>
-      <span class="current">Gerador de Posts</span>
+      <span>Operação</span><span class="breadcrumb-sep">/</span>
+      <span class="current">Posts gerados</span>
     </div>
 
-    <div class="main-header">
-      <div>
-        <h1 class="header-title">O que foi feito<br><em>já virou post.</em></h1>
-        <p class="header-subtitle">
-          23 sugestões geradas automaticamente a partir da sua agenda, emendas e pautas de hoje.
-          Aprove, edite ou gere variações. Todo conteúdo passa pela sua voz.
-        </p>
-      </div>
-      <div class="header-actions">
-        <button class="btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendário</button>
-        <button class="btn-primary btn"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Novo post</button>
-      </div>
-    </div>
-
-    <!-- KPIs -->
-    <div class="kpi-strip">
-      <div class="kpi">
-        <div class="kpi-label">Aguardando aprovação</div>
-        <div class="kpi-value">14</div>
-        <div class="kpi-delta" style="color: var(--caution);">Hoje até 18h</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Aprovados · prontos</div>
-        <div class="kpi-value">9</div>
-        <div class="kpi-delta">+3 vs ontem</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Publicados · 7 dias</div>
-        <div class="kpi-value">47</div>
-        <div class="kpi-delta">Engaj. médio: 8.2%</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Taxa de aprovação s/ edição</div>
-        <div class="kpi-value">68%</div>
-        <div class="kpi-delta">Voz bem calibrada</div>
-      </div>
-    </div>
-
-    <!-- Filters bar -->
-    <div class="filters-bar">
-      <div class="filters-left">
-        <button class="filter-chip active">Todos <span class="count">23</span></button>
-        <button class="filter-chip">Aguardando <span class="count">14</span></button>
-        <button class="filter-chip">Aprovados <span class="count">9</span></button>
-        <button class="filter-chip">Instagram <span class="count">11</span></button>
-        <button class="filter-chip">TikTok <span class="count">4</span></button>
-        <button class="filter-chip">WhatsApp <span class="count">5</span></button>
-        <button class="filter-chip">X <span class="count">3</span></button>
-      </div>
-      <div class="filters-right">
-        <input class="search-input" placeholder="Buscar por tema ou fonte…" />
-        <div class="view-toggle">
-          <button class="view-btn active">Grid</button>
-          <button class="view-btn">Lista</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content Layout -->
-    <div class="content-layout">
-
-      <!-- Posts Section -->
-      <div class="posts-section">
-
-        <div class="section-heading">
-          <h2>Hoje · <em>agrupados por fonte</em></h2>
-          <span class="meta">Atualizado há 3 min</span>
-        </div>
-
-        <!-- GROUP 1: Emenda -->
-        <div class="source-group">
-          <div class="source-header">
-            <div class="source-header-left">
-              <div class="source-icon">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              </div>
-              <div class="source-info">
-                <div class="source-title"><strong>Fonte:</strong> Emenda #2847 · Hospital de Betim · R$ 1.2M</div>
-                <div class="source-meta">Protocolada em 2024 · Executada em abril/26 · Visita hoje 14h</div>
-              </div>
-            </div>
-            <div class="source-header-right">
-              <div class="source-count">4 sugestões</div>
-            </div>
-          </div>
-
-          <div class="posts-grid">
-
-            <!-- Post 1 -->
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                  Instagram · Feed
-                </div>
-                <div class="status-dot waiting" title="Aguardando aprovação"></div>
-              </div>
-              <div class="post-card-visual gradient-1">
-                <div class="visual-number">R$1,2M</div>
-                <div class="visual-label">Hospital de Betim</div>
-              </div>
-              <p class="post-preview"><strong>Hospital de Betim.</strong> Acompanhei a execução da emenda de R$ 1.2M que apresentei em 2024. Saúde se faz com presença, não com promessa.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>📷 1 foto</span>
-                  <span>📝 42 palavras</span>
-                </div>
-                <span class="cta">Revisar →</span>
-              </div>
-            </div>
-
-            <!-- Post 2 -->
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                  Reels · 18s
-                </div>
-                <div class="status-dot waiting"></div>
-              </div>
-              <div class="post-card-visual gradient-2 video"></div>
-              <p class="post-preview">Roteiro: <strong>Gancho</strong> — "R$ 1.2M saiu do papel hoje." <strong>Corpo</strong> — 3 cortes do hospital. <strong>Fechamento</strong> — "Isso é trabalho."</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>🎵 Trilha sugerida</span>
-                  <span>✂ 3 cortes</span>
-                </div>
-                <span class="cta">Revisar →</span>
-              </div>
-            </div>
-
-            <!-- Post 3 -->
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                  WhatsApp · Lista base
-                </div>
-                <div class="status-dot approved"></div>
-              </div>
-              <div class="post-card-visual gradient-1">
-                <div class="visual-number">✓</div>
-                <div class="visual-label">Prova social · card</div>
-              </div>
-              <p class="post-preview">Card visual com <strong>R$ 1.2M aplicados</strong> + foto da visita. Mensagem: "O que a gente promete, a gente cumpre."</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>👥 3.247 contatos</span>
-                  <span>✓ Aprovado</span>
-                </div>
-                <span class="cta">Agendar →</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- GROUP 2: Agenda Hoje -->
-        <div class="source-group">
-          <div class="source-header">
-            <div class="source-header-left">
-              <div class="source-icon">
-                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div class="source-info">
-                <div class="source-title"><strong>Fonte:</strong> Agenda · Café com lideranças · Região Leste · 09h42</div>
-                <div class="source-meta">3 fotos enviadas pela equipe · descrição preenchida</div>
-              </div>
-            </div>
-            <div class="source-header-right">
-              <div class="source-count">3 sugestões</div>
-            </div>
-          </div>
-
-          <div class="posts-grid">
-
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
-                  Instagram · Stories
-                </div>
-                <div class="status-dot waiting"></div>
-              </div>
-              <div class="post-card-visual gradient-2">
-                <div class="visual-number" style="color: var(--mist); font-size: 28px;">3 stories</div>
-                <div class="visual-label" style="color: var(--fog);">Sequencial · narrativa</div>
-              </div>
-              <p class="post-preview">Story 1: chegada no centro comunitário. Story 2: escuta ativa com lideranças. Story 3: promessa específica de retorno com plano.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>⏱ 15s cada</span>
-                  <span>📸 3 fotos</span>
-                </div>
-                <span class="cta">Revisar →</span>
-              </div>
-            </div>
-
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
-                  Instagram · Feed
-                </div>
-                <div class="status-dot waiting"></div>
-              </div>
-              <div class="post-card-visual gradient-2"></div>
-              <p class="post-preview">Foto em grupo + legenda sobre o que foi ouvido. <strong>Tema dominante:</strong> transporte público na região. Propor pauta na ALMG.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>📷 1 foto</span>
-                  <span>📝 68 palavras</span>
-                </div>
-                <span class="cta">Revisar →</span>
-              </div>
-            </div>
-
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
-                  X (Twitter)
-                </div>
-                <div class="status-dot draft"></div>
-              </div>
-              <div class="post-card-visual gradient-2" style="height: 80px;">
-                <div style="color: var(--mist); font-family: var(--font-display); font-size: 18px;">"ouvir antes de falar."</div>
-              </div>
-              <p class="post-preview">Thread de 3 tweets. Gancho: reflexão sobre escuta política. Dados reais de demandas levantadas no bairro. Compromisso.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>📝 3 tweets</span>
-                  <span>○ Rascunho</span>
-                </div>
-                <span class="cta">Desenvolver →</span>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- GROUP 3: Efeméride -->
-        <div class="source-group">
-          <div class="source-header">
-            <div class="source-header-left">
-              <div class="source-icon">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <div class="source-info">
-                <div class="source-title"><strong>Fonte:</strong> Efeméride · 22 de abril · Dia do Descobrimento do Brasil</div>
-                <div class="source-meta">Cruzada com pauta educacional da candidata · sugestão de ângulo crítico</div>
-              </div>
-            </div>
-            <div class="source-header-right">
-              <div class="source-count">2 sugestões</div>
-            </div>
-          </div>
-
-          <div class="posts-grid">
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
-                  Instagram · Carrossel
-                </div>
-                <div class="status-dot waiting"></div>
-              </div>
-              <div class="post-card-visual gradient-2">
-                <div class="visual-number" style="color: var(--mist); font-size: 28px;">5 slides</div>
-                <div class="visual-label" style="color: var(--fog);">Educacional</div>
-              </div>
-              <p class="post-preview">Carrossel com leitura crítica da data. <strong>Tom:</strong> nem apologia nem cancelamento. Convite à reflexão histórica. Alinhado com seu discurso em Mar/26.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>📱 5 slides</span>
-                  <span>⚠ Sensível</span>
-                </div>
-                <span class="cta">Revisar →</span>
-              </div>
-            </div>
-            <div class="post-card">
-              <div class="post-card-head">
-                <div class="channel-chip">
-                  <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                  Artigo · LinkedIn
-                </div>
-                <div class="status-dot draft"></div>
-              </div>
-              <div class="post-card-visual gradient-2" style="height: 80px;"></div>
-              <p class="post-preview">Texto longo (~600 palavras): "Descobrimento ou invasão? A pergunta que a educação brasileira ainda precisa fazer." Pede aprovação antes de desenvolver.</p>
-              <div class="post-card-foot">
-                <div class="post-card-foot-left">
-                  <span>📝 Rascunho</span>
-                  <span>○ Não desenvolvido</span>
-                </div>
-                <span class="cta">Desenvolver →</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Right Rail -->
-      <aside class="right-rail">
-
-        <!-- Voice Training -->
-        <div class="voice-card">
-          <div class="voice-label">
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1 class="page-title">Posts <em>gerados</em></h1>
+        <div class="page-meta">
+          <div class="page-meta-item">
             <span class="live-dot"></span>
-            Voz calibrada
+            <span>O Redator e o Designer prepararam <strong>23 posts</strong> pra você esta manhã</span>
           </div>
-          <div class="voice-title">Marina, a IA está <em>aprendendo você.</em></div>
-          <p class="voice-desc">Treinada com 247 posts antigos, 12 entrevistas e 8 discursos. Quanto mais você aprova, melhor fica.</p>
-          <div class="voice-metrics">
-            <div class="voice-metric">
-              <div class="voice-metric-val">68%</div>
-              <div class="voice-metric-label">Aprov. sem edição</div>
-            </div>
-            <div class="voice-metric">
-              <div class="voice-metric-val">v12</div>
-              <div class="voice-metric-label">Iteração do modelo</div>
-            </div>
+          <div class="page-meta-item">
+            <span style="color: var(--fog-softer);">·</span>
+            <span>Aderência média à voz <strong>94%</strong></span>
           </div>
         </div>
+      </div>
+      <div class="page-header-right">
+        <button class="btn-icon-text">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Atualizar
+        </button>
+        <button class="btn-icon-text">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Configurar agentes
+        </button>
+      </div>
+    </header>
 
-        <!-- Sources Today -->
-        <div class="rail-card">
-          <div class="rail-card-title">
-            <span>Fontes de hoje</span>
-            <span style="color: var(--signal);">8 ativas</span>
-          </div>
-          <div class="sources-list">
-            <div class="source-item">
-              <div class="source-item-dot emenda"></div>
-              <div class="source-item-content">
-                <div class="source-item-title">Emenda #2847 · Hospital de Betim</div>
-                <div class="source-item-meta">Executada · 4 posts</div>
-              </div>
-            </div>
-            <div class="source-item">
-              <div class="source-item-dot visita"></div>
-              <div class="source-item-content">
-                <div class="source-item-title">Café · Lideranças Região Leste</div>
-                <div class="source-item-meta">09h42 · 3 posts</div>
-              </div>
-            </div>
-            <div class="source-item">
-              <div class="source-item-dot efemeride"></div>
-              <div class="source-item-content">
-                <div class="source-item-title">22 de abril · Descobrimento</div>
-                <div class="source-item-meta">Efeméride · 2 posts</div>
-              </div>
-            </div>
-            <div class="source-item">
-              <div class="source-item-dot provasocial"></div>
-              <div class="source-item-content">
-                <div class="source-item-title">3 elogios públicos · Instagram</div>
-                <div class="source-item-meta">Prova social · 2 posts</div>
-              </div>
-            </div>
-            <div class="source-item">
-              <div class="source-item-dot visita"></div>
-              <div class="source-item-content">
-                <div class="source-item-title">Entrevista · Rádio Itatiaia · 11h30</div>
-                <div class="source-item-meta">Aguardando · 0 posts</div>
-              </div>
-            </div>
-          </div>
+    <!-- FILTROS -->
+    <div class="filters-bar">
+      <div class="filter-tabs">
+        <div class="filter-tab active">
+          Todos <span class="filter-tab-count">23</span>
         </div>
-
-        <!-- Coherence -->
-        <div class="rail-card coherence-card">
-          <div class="rail-card-title"><span>Coerência narrativa</span></div>
-          <div class="coherence-bar-wrap">
-            <div class="coherence-label-row">
-              <span style="color: var(--fog);">Últimos 30 dias</span>
-              <span class="val">94%</span>
-            </div>
-            <div class="coherence-bar">
-              <div class="coherence-fill" style="width: 94%;"></div>
-            </div>
-            <p class="coherence-note">Todos os posts alinhados com posicionamento histórico. 2 alertas resolvidos este mês.</p>
-          </div>
+        <div class="filter-tab">
+          Trabalho parlamentar <span class="filter-tab-count">9</span>
         </div>
-
-        <!-- Compliance -->
-        <div class="rail-card">
-          <div class="rail-card-title"><span>Compliance TSE · 2026</span></div>
-          <div class="compliance-row">
-            <span class="k">Rotulagem IA</span>
-            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Auto</span>
-          </div>
-          <div class="compliance-row">
-            <span class="k">Blackout pré-pleito</span>
-            <span class="v" style="color: var(--fog);">164 dias</span>
-          </div>
-          <div class="compliance-row">
-            <span class="k">Logs auditáveis</span>
-            <span class="v"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ativo</span>
-          </div>
-          <div class="compliance-row">
-            <span class="k">Conteúdo sintético hoje</span>
-            <span class="v" style="color: var(--mist);">23 peças</span>
-          </div>
+        <div class="filter-tab">
+          Trending <span class="filter-tab-count">6</span>
         </div>
+        <div class="filter-tab">
+          Agenda <span class="filter-tab-count">4</span>
+        </div>
+        <div class="filter-tab">
+          Efemérides <span class="filter-tab-count">4</span>
+        </div>
+      </div>
 
-      </aside>
+      <div class="filter-divider"></div>
 
+      <button class="filter-chip">
+        Canal: todos
+        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <button class="filter-chip">
+        Aderência: 80%+
+        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
     </div>
+
+    <!-- DOBRA 1: HERO POST -->
+    <section class="hero-post-section">
+      <div class="hero-eyebrow">O post mais quente desta manhã</div>
+
+      <article class="hero-post-card">
+
+        <!-- THUMB EDITORIAL -->
+        <div class="hero-post-thumb-wrap">
+          <div class="hero-post-thumb-label">
+            <span>Arte gerada · feed Instagram</span>
+          </div>
+          <div class="thumb thumb-hero thumb-parlamentar">
+            <div class="thumb-header">
+              <span class="thumb-tag">Trabalho parlamentar</span>
+              <div class="thumb-mark">
+                <span class="thumb-mark-dot"></span>
+                <span>Sinal</span>
+              </div>
+            </div>
+            <div>
+              <div class="thumb-highlight">R$ 1.2<em>M</em></div>
+              <h3 class="thumb-headline">Para o <em>Hospital de<br>Betim.</em></h3>
+              <p class="thumb-sub">Emenda paga ontem. 47 mil moradores impactados.</p>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina Aguiar</span>
+                  <span class="thumb-author-handle">@marinaaguiar.mg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <div class="hero-post-main">
+          <div class="hero-post-meta-row">
+            <span class="hero-post-tag">Trabalho parlamentar</span>
+            <span class="hero-post-source">📊 <strong>Fonte:</strong> +Brasil · emenda #2847/2026 · paga 23/04</span>
+          </div>
+
+          <h2 class="hero-post-headline">
+            Hospital de Betim — <em>R$ 1,2 milhão</em><br>
+            que vira atendimento.
+          </h2>
+
+          <div class="hero-post-body">
+            <div class="hero-post-text">
+              Hoje o Hospital Regional de Betim recebeu os <strong>R$ 1,2 milhão</strong> da emenda que destinei no fim de 2024. Esse valor vai equipar 3 alas, contratar 14 profissionais e atender mais 47 mil moradores da região.
+              <br><br>
+              Quando entrei na ALMG, prometi que cada centavo teria nome, endereço e propósito. Esse aqui tem: <strong>Betim</strong>, <strong>Saúde</strong>, e a tranquilidade de quem precisa do SUS perto de casa.
+              <br><br>
+              Obrigada à equipe do hospital, à Secretaria de Saúde, e principalmente a vocês, que cobram, fiscalizam e fazem isso tudo acontecer. Bora pra mais.
+              <div class="hero-post-hashtags">#Betim #SaúdePública #SUS #MandatoQueEntrega</div>
+            </div>
+          </div>
+
+          <div class="hero-post-variations">
+            <button class="variation-chip active">Factual ✓</button>
+            <button class="variation-chip">Narrativa</button>
+            <button class="variation-chip">Direta</button>
+            <button class="variation-chip">Convite</button>
+          </div>
+
+          <div class="hero-post-actions">
+            <a href="sinal-03-editor-post.html" class="btn-primary">
+              Abrir no editor
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <button class="btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 17l4 4 4-4"/><path d="M12 12v9"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+              Salvar
+            </button>
+            <button class="btn-ghost">Adiar</button>
+          </div>
+        </div>
+
+        <!-- SIDEBAR DE MÉTRICAS -->
+        <aside class="hero-post-side">
+          <div class="side-block">
+            <span class="side-label">Aderência à voz</span>
+            <span class="side-value">96<em>%</em></span>
+            <div class="side-meter">
+              <div class="side-meter-bar"><div class="side-meter-fill" style="width: 96%"></div></div>
+            </div>
+          </div>
+
+          <div class="side-divider"></div>
+
+          <div class="side-block">
+            <span class="side-label">Engajamento estimado</span>
+            <span class="side-value">8.4<em>k</em></span>
+            <div class="side-meter">
+              <div class="side-meter-bar"><div class="side-meter-fill" style="width: 78%"></div></div>
+            </div>
+          </div>
+
+          <div class="side-divider"></div>
+
+          <div class="side-block">
+            <span class="side-label">Canais sugeridos</span>
+            <div class="side-channels" style="margin-top: 8px;">
+              <span class="channel-pill">📷 Instagram</span>
+              <span class="channel-pill">🎬 Reels</span>
+              <span class="channel-pill">💬 WhatsApp</span>
+            </div>
+          </div>
+
+          <div class="side-divider"></div>
+
+          <div class="side-block">
+            <span class="side-label">Janela ótima</span>
+            <span class="side-value">11h<em>30</em></span>
+          </div>
+
+          <div class="side-divider"></div>
+
+          <div class="side-block">
+            <span class="side-label">Compliance</span>
+            <span class="side-value" style="font-size: 18px; color: var(--positive);">✓ Aprovado</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--fog); margin-top: 2px;">Auditor validou · TSE 23.732</span>
+          </div>
+        </aside>
+      </article>
+    </section>
+
+    <!-- DOBRA 2: TOP 3 -->
+    <section class="priority-posts-section">
+      <div class="section-divider">
+        <h2 class="section-title">Próximos <em>3 posts</em> em destaque</h2>
+        <span class="section-meta">Ordenados por impacto previsto</span>
+      </div>
+
+      <div class="priority-posts-grid">
+
+        <!-- POST 2 - TRENDING -->
+        <article class="post-card">
+          <div class="thumb thumb-medium thumb-trending">
+            <div class="thumb-header">
+              <span class="thumb-tag">Trending</span>
+              <div class="thumb-mark">
+                <span class="thumb-mark-dot"></span>
+                <span>Sinal</span>
+              </div>
+            </div>
+            <div>
+              <div class="thumb-highlight">R$ 850K</div>
+              <h3 class="thumb-headline">Em emenda pra <em>creches públicas.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina Aguiar</span>
+                  <span class="thumb-author-handle">@marinaaguiar.mg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-card-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag trending">Trending</span>
+              <span class="post-card-source">G1 Minas · Contagem</span>
+            </div>
+            <h3 class="post-card-headline">Mães de Contagem pedem creche pública</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Em <strong>Contagem</strong>, mães se mobilizam pelo direito básico de ter onde deixar seus filhos enquanto trabalham. Não é favor — é Constituição.
+                <br><br>
+                Em 2024 votei pela ampliação da rede pública de creches em MG. Em 2025 destinei <strong>R$ 850 mil</strong> em emenda específica.
+                <div class="post-card-hashtags">#CrechePública #DireitosDaCriança</div>
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">94<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">3.2<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Janela</span>
+                <span class="post-card-stat-value">14h</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">📷</span>
+                <span class="channel-mini">📱</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- POST 3 - AGENDA -->
+        <article class="post-card">
+          <div class="thumb thumb-medium thumb-agenda">
+            <div class="thumb-header">
+              <span class="thumb-tag">Agenda</span>
+              <div class="thumb-mark">
+                <span class="thumb-mark-dot"></span>
+                <span>Sinal</span>
+              </div>
+            </div>
+            <div>
+              <div class="thumb-highlight">14h</div>
+              <h3 class="thumb-headline">Café com lideranças<br>em <em>Sabará.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina Aguiar</span>
+                  <span class="thumb-author-handle">@marinaaguiar.mg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-card-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag agenda">Agenda do dia</span>
+              <span class="post-card-source">Sabará · 14h</span>
+            </div>
+            <h3 class="post-card-headline">Bastidor: café com lideranças em Sabará</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Daqui a pouco, café com 12 lideranças comunitárias em <strong>Sabará</strong>. Bairros diferentes, mesma pergunta: como o mandato pode ajudar onde estão as pessoas?
+                <br><br>
+                Vou ouvir muito. Vou anotar tudo. E na semana que vem, volto com resposta — não com promessa.
+                <div class="post-card-hashtags">#Sabará #PolíticaDeBase</div>
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">98<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">1.8<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Janela</span>
+                <span class="post-card-stat-value">13h</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">📷</span>
+                <span class="channel-mini">🎬</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- POST 4 - EFEMÉRIDE -->
+        <article class="post-card">
+          <div class="thumb thumb-medium thumb-efemeride">
+            <div class="thumb-header">
+              <span class="thumb-tag">Efeméride</span>
+              <div class="thumb-mark">
+                <span class="thumb-mark-dot"></span>
+                <span>Sinal</span>
+              </div>
+            </div>
+            <div>
+              <div class="thumb-highlight">28/04</div>
+              <h3 class="thumb-headline">Dia da <em>Educação</em><br>com 3 emendas.</h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina Aguiar</span>
+                  <span class="thumb-author-handle">@marinaaguiar.mg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="post-card-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag efemeride">Efeméride</span>
+              <span class="post-card-source">28/04 · +4 dias</span>
+            </div>
+            <h3 class="post-card-headline">28/04 — Carrossel sobre Educação</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                No <strong>Dia da Educação</strong>, não vou postar frase bonita. Vou postar número.
+                <br><br>
+                <strong>3 emendas para escolas em 2025-2026:</strong>
+                <br>→ Reforma em Vespasiano: R$ 420K
+                <br>→ Equipamentos em Betim: R$ 680K
+                <br>→ Material em Sabará: R$ 140K
+                <div class="post-card-hashtags">#DiaDaEducação #Educação</div>
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">92<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">2.4<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Janela</span>
+                <span class="post-card-stat-value">28/04</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">📷</span>
+                <span class="channel-mini">🎬</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- DOBRA 3: GRID DE POSTS COMPACTO -->
+    <section class="all-posts-section">
+      <div class="section-divider">
+        <h2 class="section-title">Os outros <em>19 posts</em> da manhã</h2>
+        <span class="section-meta">Trabalho parlamentar · trending · agenda · efemérides</span>
+      </div>
+
+      <div class="all-posts-grid">
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-parlamentar">
+            <div class="thumb-header">
+              <span class="thumb-tag">Parlamentar</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">12</div>
+              <h3 class="thumb-headline">Leitos novos<br>em <em>BH.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag parlamentar">Parlamentar</span>
+              <span class="post-card-source">+Brasil · BH</span>
+            </div>
+            <h3 class="post-card-headline">12 leitos novos no Hospital São Bento</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Resultado da emenda que destinei em 2024 ao Hospital São Bento, em <strong>Belo Horizonte</strong>: 12 novos leitos do SUS, R$ 380 mil aplicados, mais 8 mil atendimentos por ano.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">95<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">2.1<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">📷</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">📷</span>
+                <span class="channel-mini">🎬</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-parlamentar">
+            <div class="thumb-header">
+              <span class="thumb-tag">Parlamentar</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">47</div>
+              <h3 class="thumb-headline">Votos pelas<br><em>bolsas escolares.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag parlamentar">Parlamentar</span>
+              <span class="post-card-source">ALMG · 22/04</span>
+            </div>
+            <h3 class="post-card-headline">PL 1247 — bolsas escolares aprovadas</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Ontem na ALMG votamos pela ampliação das bolsas escolares pra rede pública. <strong>47 votos a favor</strong>. Cada bolsa é uma família que respira. Cada voto é uma escolha clara: ou a gente investe em educação, ou paga mais caro depois.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">93<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">3.8<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">𝕏</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">𝕏</span>
+                <span class="channel-mini">📷</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-trending">
+            <div class="thumb-header">
+              <span class="thumb-tag">Trending</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">BR<br>381</div>
+              <h3 class="thumb-headline">Cobrança<br>ao <em>DNIT.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag trending">Trending</span>
+              <span class="post-card-source">BR-381 · Betim</span>
+            </div>
+            <h3 class="post-card-headline">Trânsito na BR-381: ouvi vocês</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Estou recebendo dezenas de mensagens sobre o caos na <strong>BR-381</strong> esta manhã. Já entrei em contato com o DNIT e o DER pedindo posicionamento e prazo. Ainda hoje volto com a resposta.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">91<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">5.6<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">𝕏</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">𝕏</span>
+                <span class="channel-mini">📱</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-parlamentar">
+            <div class="thumb-header">
+              <span class="thumb-tag">Parlamentar</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">R$ 8.2<em>M</em></div>
+              <h3 class="thumb-headline">Terminal<br>em <em>Nova Lima.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag parlamentar">Parlamentar</span>
+              <span class="post-card-source">SEINFRA · Nova Lima</span>
+            </div>
+            <h3 class="post-card-headline">Terminal de Nova Lima foi inaugurado</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                O novo terminal rodoviário de <strong>Nova Lima</strong> foi inaugurado ontem. Esse projeto começou em 2023, num gabinete da ALMG, e termina hoje servindo <strong>30 mil passageiros por dia</strong>.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">96<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">2.8<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">🎬</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">🎬</span>
+                <span class="channel-mini">📷</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-trending">
+            <div class="thumb-header">
+              <span class="thumb-tag">Trending</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">4<em>d</em></div>
+              <h3 class="thumb-headline">Sem água em<br><em>Ibirité.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag trending">Trending</span>
+              <span class="post-card-source">Ibirité · Band MG</span>
+            </div>
+            <h3 class="post-card-headline">Falta d'água em Ibirité — cobrança feita</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Famílias de <strong>Ibirité</strong> sem água há quatro dias. Já não dá pra esperar. Acabei de protocolar requerimento na ALMG cobrando da Copasa explicação imediata e cronograma de retomada.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">94<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">4.1<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">📷</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">📷</span>
+                <span class="channel-mini">💬</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card-compact-wrap">
+          <div class="thumb thumb-compact thumb-agenda">
+            <div class="thumb-header">
+              <span class="thumb-tag">Agenda</span>
+            </div>
+            <div>
+              <div class="thumb-highlight">16h</div>
+              <h3 class="thumb-headline">Saúde<br><em>mental.</em></h3>
+            </div>
+            <div class="thumb-footer">
+              <div class="thumb-author">
+                <div class="thumb-avatar">MA</div>
+                <div class="thumb-author-info">
+                  <span class="thumb-author-name">Marina A.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="post-card-compact-content">
+            <div class="post-card-meta">
+              <span class="post-card-tag agenda">Agenda</span>
+              <span class="post-card-source">ALMG · 16h</span>
+            </div>
+            <h3 class="post-card-headline">Audiência sobre saúde mental — vou estar lá</h3>
+            <div class="post-card-body">
+              <div class="post-card-text">
+                Hoje às 16h, na ALMG, audiência pública sobre <strong>saúde mental</strong> na rede pública de MG. Sou membra da comissão e estarei lá presente. Saúde mental não é acessório. É emergência.
+              </div>
+            </div>
+            <div class="post-card-stats">
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Aderência</span>
+                <span class="post-card-stat-value">97<em>%</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Engaj.</span>
+                <span class="post-card-stat-value">1.6<em>k</em></span>
+              </div>
+              <div class="post-card-stat">
+                <span class="post-card-stat-label">Canal</span>
+                <span class="post-card-stat-value">🎬</span>
+              </div>
+            </div>
+            <div class="post-card-footer">
+              <div class="post-card-channels">
+                <span class="channel-mini">🎬</span>
+                <span class="channel-mini">𝕏</span>
+              </div>
+              <button class="btn-card">
+                Editar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="see-more-row">
+        <button class="btn-see-more">
+          Ver mais 13 posts
+          <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+      </div>
+    </section>
 
   </main>
 
